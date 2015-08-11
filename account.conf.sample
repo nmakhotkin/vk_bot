@@ -1,0 +1,6 @@
+[auth]
+email = email@example.com
+password = secret
+
+[chat]
+main = 1

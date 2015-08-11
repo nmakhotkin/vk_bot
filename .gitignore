@@ -1,0 +1,14 @@
+account.conf
+.idea
+*.py[cod]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+.venv
+eggs
+parts
+bin
+var
