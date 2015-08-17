@@ -2,10 +2,10 @@
 # -*- coding: UTF-8 -*-
 
 import cookielib
-import urllib2
-import urllib
-from urlparse import urlparse
 from HTMLParser import HTMLParser
+import urllib
+import urllib2
+from urlparse import urlparse
 
 
 class FormParser(HTMLParser):
@@ -104,18 +104,3 @@ def auth(email, password, client_id, scope):
     if "access_token" not in answer or "user_id" not in answer:
         raise RuntimeError("Missing some values in answer")
     return answer["access_token"], answer["user_id"]
-
-
-def main():
-    email = "***"
-    password = "***"
-    client_id = "3756128"
-    scope = 'messages,friends'
-
-    token, user_id = auth(email, password, client_id, scope)
-    print "TOKEN = %s" % token
-    print "USER_ID = %s" % user_id
-
-
-if __name__ == '__main__':
-    main()

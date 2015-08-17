@@ -8,27 +8,75 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import logging
+
 import vk
 
 from vk_bot.auth import auth
 from vk_bot import config
 
 
+LOG = logging.getLogger(__name__)
 CONF = config.CONF
-APP_ID = '3756128'
-SCOPE = 'messages,friends'
-EMAIL = CONF.get('auth', 'email')
-PASSWORD = CONF.get('auth', 'password')
 
 MAIN_CHAT_ID = CONF.get('chat', 'main')
+BOT = None
 
 
-def run_test():
-    access_token, _ = auth.auth(EMAIL, PASSWORD, APP_ID, SCOPE)
-    api = vk.API(access_token=access_token)
+def get_bot():
+    global BOT
 
-    chat = api.messages.getChat(chat_id=MAIN_CHAT_ID)
-    if not chat:
-        raise Exception("The chat not found for chat id: %s" % MAIN_CHAT_ID)
+    if not BOT:
+        app_id = CONF.get('auth', 'app_id')
+        scope = 'messages,friends'
+        email = CONF.get('auth', 'email')
+        password = CONF.get('auth', 'password')
 
-    api.messages.send(chat_id=chat['id'], message='VkBot test')
+        BOT = VkBot(email, password, app_id, scope)
+
+    return BOT
+
+
+class VkBot(object):
+    def __init__(self, email, password, app_id, scope):
+        self.app_id = app_id
+        try:
+            self.access_token, _ = auth.auth(email, password, app_id, scope)
+        except Exception as e:
+            raise RuntimeError("Can not get access token. See details: %s" % e)
+
+        self._api = vk.API(access_token=self.access_token)
+        self._main_chat = None
+
+    @property
+    def api(self):
+        return self._api
+
+    @property
+    def main_chat(self):
+        if not self._main_chat:
+            chat = self.api.messages.getChat(chat_id=MAIN_CHAT_ID)
+
+            if not chat:
+                raise Exception(
+                    "The chat not found for chat id: %s" % MAIN_CHAT_ID
+                )
+
+            self._main_chat = chat
+
+        return self._main_chat
+
+    def send_to_main(self, message):
+        return self.api.messages.send(
+            chat_id=self.main_chat['id'],
+            message=message
+        )
+
+    def test(self):
+        LOG.info("Sending test info...")
+
+        self.send_to_main(
+            'VkBot Test. This is automatically constructed message.'
+        )
+
+        LOG.info("Sent.")

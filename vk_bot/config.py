@@ -1,7 +1,11 @@
 
+import logging
 from six.moves import configparser
 
 from vk_bot import utils
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 _ACCOUNT_FILE = '../account.conf'

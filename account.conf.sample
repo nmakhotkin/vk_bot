@@ -1,6 +1,19 @@
 [auth]
+# Auth information: email and password.
 email = email@example.com
 password = secret
 
+app_id = 3756128
+
+
 [chat]
+# Main chat for sending messages to.
 main = 1
+
+[periodic]
+# seconds integer.
+send_uptime_interval = 604800
+
+
+[cron]
+send_uptime = @weekly
