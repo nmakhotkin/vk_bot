@@ -22,11 +22,9 @@ from vk_bot import config
 config.parse()
 
 from vk_bot.services import cron
-from vk_bot.services import periodic
 
 
 def main():
-    periodic.setup()
     cron_thread = cron.setup()
     thread = eventlet.spawn(cron_thread.join)
 

@@ -1,5 +1,4 @@
 crython
-oslo.service
 pbr
 six
 vk
