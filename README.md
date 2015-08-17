@@ -12,6 +12,15 @@ Install the package:
 Using
 -----
 
-There is only test is available for now, type for simple VkBot test:
+Script 'vkontakte-bot' will be available after installation.
+Simple run:
+
+    vkontakte-bot
+
+Test
+----
+
+For testing purpose, there is simple test script which sends
+only test info to main chat (please configure properly *chat_id* field).
 
     python vk_bot/test.py
