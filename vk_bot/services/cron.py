@@ -19,8 +19,6 @@ CONF = config.CONF
 
 # TODO(nmakhotkin): add more actions.
 
-__import__("ipdb").set_trace()
-
 
 @crython.job(expr=CONF.get('cron', 'send_uptime'))
 def send_uptime():
@@ -29,8 +27,7 @@ def send_uptime():
     uptime_pp = "Kolyan's computer uptime:\n%s" % uptime_pp
 
     # Send uptime information to main chat.
-    print (uptime_pp)
-    #bot.get_bot().send_to_main(uptime_pp)
+    bot.get_bot().send_to_main(uptime_pp)
 
 
 def setup():
