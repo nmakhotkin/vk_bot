@@ -8,10 +8,15 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import logging
+
 from vk_bot import config
 config.parse()
 
 from vk_bot import bot
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 def main():

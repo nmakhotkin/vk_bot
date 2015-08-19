@@ -10,9 +10,13 @@
 
 import logging
 
+import requests
+import urllib
+import urlparse
 import vk
 
 from vk_bot import config
+from vk_bot import utils
 
 LOG = logging.getLogger(__name__)
 CONF = config.CONF
@@ -26,7 +30,7 @@ def get_bot():
 
     if not BOT:
         app_id = CONF.get('auth', 'app_id')
-        scope = 'messages,friends,photo'
+        scope = 'messages,friends,photos'
         email = CONF.get('auth', 'email')
         password = CONF.get('auth', 'password')
 
@@ -49,6 +53,8 @@ class VkBot(object):
 
     @property
     def api(self):
+        if not self._api.access_token:
+            self._api.get_access_token()
         return self._api
 
     @property
@@ -71,14 +77,48 @@ class VkBot(object):
             message=message
         )
 
+    def send_to_main_picture(self, picture_url, message=None):
+        photo_id = self._get_photo_id(picture_url)
+
+        params = {
+            'attachment': photo_id,
+            'chat_id': self.main_chat['id']
+        }
+
+        if message:
+            params.update({'message': message})
+
+        return self.api.messages.send(**params)
+
+    @utils.with_retry()
+    def _get_server_url(self):
+        server_url = self.api.photos.getMessagesUploadServer()
+        return server_url['upload_url']
+
     def _get_photo_id(self, photo_url):
-        # TODO(nmakhotkin): complete the method.
-        # server_url = self.api.photos.getMessagesUploadServer()['upolad_url']
+        server_url = self._get_server_url()
 
-        # photo, resp = urllib.urlretrieve(photo_url)
+        photo, resp = urllib.urlretrieve(photo_url)
 
-        # requests.post(server_url, photo)
-        pass
+        data = {}
+        files = {'photo': (photo, open(photo, 'rb'))}
+        url = server_url.split('?')[0]
+        for key, value in urlparse.parse_qs(server_url.split('?')[1]).iteritems():
+            data[key] = value
+
+        resp = requests.post(url, data, files=files)
+
+        if not resp.json().get('photo'):
+            raise RuntimeError("The photo is not uploaded properly.")
+
+        params = {
+            'server': resp.json()['server'],
+            'photo': [resp.json()['photo']],
+            'hash': [resp.json()['hash']]
+        }
+        photo_info = self.api.photos.saveMessagesPhoto(**params)
+
+        return "photo%s_%s" % (photo_info[0]['owner_id'], photo_info[0]['id'])
 
     def test(self):
         LOG.info("Sending test info...")
