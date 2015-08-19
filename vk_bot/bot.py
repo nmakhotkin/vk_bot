@@ -12,9 +12,7 @@ import logging
 
 import vk
 
-from vk_bot.auth import auth
 from vk_bot import config
-
 
 LOG = logging.getLogger(__name__)
 CONF = config.CONF
@@ -28,7 +26,7 @@ def get_bot():
 
     if not BOT:
         app_id = CONF.get('auth', 'app_id')
-        scope = 'messages,friends'
+        scope = 'messages,friends,photo'
         email = CONF.get('auth', 'email')
         password = CONF.get('auth', 'password')
 
@@ -40,12 +38,13 @@ def get_bot():
 class VkBot(object):
     def __init__(self, email, password, app_id, scope):
         self.app_id = app_id
-        try:
-            self.access_token, _ = auth.auth(email, password, app_id, scope)
-        except Exception as e:
-            raise RuntimeError("Can not get access token. See details: %s" % e)
 
-        self._api = vk.API(access_token=self.access_token)
+        self._api = vk.OAuthAPI(
+            app_id=app_id,
+            user_login=email,
+            user_password=password,
+            scope=scope
+        )
         self._main_chat = None
 
     @property
@@ -71,6 +70,15 @@ class VkBot(object):
             chat_id=self.main_chat['id'],
             message=message
         )
+
+    def _get_photo_id(self, photo_url):
+        # TODO(nmakhotkin): complete the method.
+        # server_url = self.api.photos.getMessagesUploadServer()['upolad_url']
+
+        # photo, resp = urllib.urlretrieve(photo_url)
+
+        # requests.post(server_url, photo)
+        pass
 
     def test(self):
         LOG.info("Sending test info...")

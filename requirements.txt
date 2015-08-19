@@ -1,4 +1,4 @@
 crython
 pbr
 six
-vk
+vk==2.0b0
