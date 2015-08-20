@@ -31,10 +31,12 @@ def with_retry(count=3, delay=1, accept_none=False):
 
                     return result
                 except Exception as e:
-                    LOG.warn("Retry got error: %s" % e)
+                    LOG.exception("Retry got error: %s" % e)
 
                     counter += 1
                     time.sleep(delay)
+
+            raise RuntimeError("The function is failed to execute.")
         return wrapped
     return decorator
 

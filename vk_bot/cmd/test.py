@@ -19,9 +19,13 @@ from vk_bot import bot
 
 logging.basicConfig(level=logging.INFO)
 
+LOG = logging.getLogger(__name__)
+
 
 def main():
     vk_bot = bot.get_bot()
+
+    LOG.info("Start test...")
 
     vk_bot.test()
 
