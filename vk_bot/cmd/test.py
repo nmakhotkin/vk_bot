@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2015 - Nikolay Makhotkin.
 #
 # Licensed under the Whatever You Want License.

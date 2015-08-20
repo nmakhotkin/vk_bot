@@ -11,7 +11,6 @@
 import logging
 
 import requests
-import urllib
 import urlparse
 import vk
 
@@ -93,15 +92,15 @@ class VkBot(object):
     @utils.with_retry()
     def _get_server_url(self):
         server_url = self.api.photos.getMessagesUploadServer()
-        return server_url['upload_url']
+        return server_url.get('upload_url')
 
     def _get_photo_id(self, photo_url):
         server_url = self._get_server_url()
 
-        photo, resp = urllib.urlretrieve(photo_url)
+        photo_path = utils.download_picture(photo_url)
 
         data = {}
-        files = {'photo': (photo, open(photo, 'rb'))}
+        files = {'photo': (photo_path, open(photo_path, 'rb'))}
         url = server_url.split('?')[0]
         for key, value in urlparse.parse_qs(server_url.split('?')[1]).iteritems():
             data[key] = value
