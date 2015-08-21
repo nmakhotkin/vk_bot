@@ -17,3 +17,4 @@ send_uptime_interval = 604800
 
 [cron]
 send_uptime = @weekly
+send_dollar_info = 0 0 7 * * * *

@@ -1,6 +1,8 @@
 
+import BeautifulSoup
 import logging
 import pkg_resources as pkg
+import requests
 import shutil
 import time
 import urllib
@@ -49,3 +51,37 @@ def download_picture(url):
         file_path += '.png'
 
     return file_path
+
+
+def get_dollar_info():
+    url = 'http://kursnazavtra.info/'
+    resp = requests.get(url)
+
+    parsed_html = BeautifulSoup.BeautifulSoup(resp.content)
+    tags = parsed_html.findAll('div', attrs={'class': 'style1'})
+
+    return {
+        'today': tags[0].text,
+        'tomorrow': tags[1].text
+    }
+
+
+def log_execution(message_before, message_after, message_exc=None):
+    def decorator(func):
+        def wrapped(*args, **kwargs):
+            print(message_before)
+
+            try:
+                result = func(*args, **kwargs)
+
+                print(message_after)
+
+                return result
+            except Exception as e:
+                if not message_exc:
+                    print (str(e))
+                else:
+                    print ("%s:\n%s" % (message_exc, e))
+
+        return wrapped
+    return decorator
