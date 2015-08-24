@@ -46,9 +46,9 @@ def send_dollar_info():
     dollar_info = utils.get_dollar_info()
 
     text = (
-        "Курс доллара на сегодня составляет %s.\n"
-        "Курс доллара на завтра составит %s"
-        % (str(dollar_info['today']), str(dollar_info['tomorrow']))
+        u"Курс доллара на сегодня: %s.\n"
+        u"Курс доллара на завтра: %s"
+        % (dollar_info['today'], dollar_info['tomorrow'])
     )
 
     bot.get_bot().send_to_main_picture(
