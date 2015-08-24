@@ -12,3 +12,4 @@ eggs
 parts
 bin
 var
+*.sqlite

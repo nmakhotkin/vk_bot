@@ -21,10 +21,12 @@ eventlet.monkey_patch(
 from vk_bot import config
 config.parse()
 
+from vk_bot.db import api
 from vk_bot.services import cron
 
 
 def main():
+    api.setup_db()
     cron_thread = cron.setup()
     thread = eventlet.spawn(cron_thread.join)
 

@@ -102,7 +102,8 @@ class VkBot(object):
         data = {}
         files = {'photo': (photo_path, open(photo_path, 'rb'))}
         url = server_url.split('?')[0]
-        for key, value in urlparse.parse_qs(server_url.split('?')[1]).iteritems():
+        parsed_qs = urlparse.parse_qs(server_url.split('?')[1])
+        for key, value in parsed_qs.iteritems():
             data[key] = value
 
         resp = requests.post(url, data, files=files)

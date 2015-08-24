@@ -1,9 +1,21 @@
+# coding=utf-8
+# Copyright 2015 - Nikolay Makhotkin.
+#
+# Licensed under the Whatever You Want License.
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 
 import BeautifulSoup
+from eventlet import corolocal
 import logging
 import pkg_resources as pkg
 import requests
 import shutil
+import threading
 import time
 import urllib
 
@@ -11,6 +23,58 @@ from vk_bot import version
 
 
 LOG = logging.getLogger(__name__)
+
+
+# Thread local storage.
+_th_loc_storage = threading.local()
+
+
+def _get_greenlet_local_storage():
+    greenlet_id = corolocal.get_ident()
+
+    greenlet_locals = getattr(_th_loc_storage, "greenlet_locals", None)
+
+    if not greenlet_locals:
+        greenlet_locals = {}
+        _th_loc_storage.greenlet_locals = greenlet_locals
+
+    if greenlet_id in greenlet_locals:
+        return greenlet_locals[greenlet_id]
+    else:
+        return None
+
+
+def has_thread_local(var_name):
+    gl_storage = _get_greenlet_local_storage()
+    return gl_storage and var_name in gl_storage
+
+
+def get_thread_local(var_name):
+    if not has_thread_local(var_name):
+        return None
+
+    return _get_greenlet_local_storage()[var_name]
+
+
+def set_thread_local(var_name, val):
+    if not val and has_thread_local(var_name):
+        gl_storage = _get_greenlet_local_storage()
+
+        # Delete variable from greenlet local storage.
+        if gl_storage:
+            del gl_storage[var_name]
+
+        # Delete the entire greenlet local storage from thread local storage.
+        if gl_storage and len(gl_storage) == 0:
+            del _th_loc_storage.greenlet_locals[corolocal.get_ident()]
+
+    if val:
+        gl_storage = _get_greenlet_local_storage()
+        if not gl_storage:
+            gl_storage = _th_loc_storage.greenlet_locals[
+                corolocal.get_ident()] = {}
+
+        gl_storage[var_name] = val
 
 
 def get_file_path(path):
