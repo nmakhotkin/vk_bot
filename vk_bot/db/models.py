@@ -24,6 +24,7 @@ class PeriodicCall(base.ModelBase):
         sa.Sequence('periodic_call_id_seq'),
         primary_key=True
     )
+    name = sa.Column(st.String(80), unique=True)
 
     target_method = sa.Column(st.String(length=200))
     arguments = sa.Column(st.Text())
@@ -33,4 +34,4 @@ class PeriodicCall(base.ModelBase):
         nullable=True,
         default='0 0 0 30 2 0 0'  # Set default to 'never'.
     )
-    remaining_executions = sa.Column(sa.Integer, default=-1)
+    remaining_executions = sa.Column(sa.Integer)

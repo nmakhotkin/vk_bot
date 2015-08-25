@@ -9,10 +9,15 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import datetime
+import json
+
+from croniter import croniter
 import crython
 
 from vk_bot import bot
 from vk_bot import config
+from vk_bot.db import api
 from vk_bot.utils import shell as sh_utils
 from vk_bot.utils import utils
 
@@ -23,6 +28,49 @@ DOLLAR_CHART_URL = (
     "http://j1.forexpf.ru/delta/prochart?type=USDRUB&amount=335"
     "&chart_height=340&chart_width=660&grtype=2&tictype=1&iId=5"
 )
+PERIODIC_CALLS = []
+
+
+def periodic_call(pattern=None, **kwargs):
+    def decorator(func):
+        PERIODIC_CALLS.append(
+            {
+                'name': func.__name__,
+                'func_path': '.'.join([func.__module__, func.__name__]),
+                'pattern': pattern,
+                'arguments': kwargs
+            }
+        )
+        return func
+    return decorator
+
+
+def initialize_periodic_calls():
+    for pcall in PERIODIC_CALLS:
+        name = pcall['name']
+        pattern = pcall.get('pattern') or CONF.get('cron', name)
+
+        pcall_db = api.get_periodic_call_by_name(name)
+
+        start_time = datetime.datetime.now()
+        next_time = croniter(pattern, start_time).get_next(datetime.datetime)
+
+        target_method = pcall['func_path']
+        arguments = pcall.get('arguments', {})
+
+        values = {
+            'execution_time': next_time,
+            'pattern': pattern,
+            'target_method': target_method,
+            'arguments': json.dumps(arguments)
+        }
+
+        if not pcall_db:
+            values.update({'name': name})
+
+            api.create_periodic_call(values)
+        else:
+            api.update_periodic_call(name, values)
 
 
 @crython.job(expr=CONF.get('cron', 'send_uptime'))

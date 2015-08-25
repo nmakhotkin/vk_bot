@@ -28,6 +28,7 @@ from vk_bot.services import cron
 def main():
     api.setup_db()
     cron_thread = cron.setup()
+    cron.initialize_periodic_calls()
     thread = eventlet.spawn(cron_thread.join)
 
     print('Vk bot started.')

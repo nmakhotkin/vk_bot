@@ -42,18 +42,24 @@ def get_periodic_calls(**kwargs):
     return query.filter_by(**kwargs).all()
 
 
-def get_periodic_call(id):
+def get_periodic_call_by_id(id):
     query = base.model_query(models.PeriodicCall)
 
     return query.filter_by(id=id).first()
 
 
+def get_periodic_call_by_name(name):
+    query = base.model_query(models.PeriodicCall)
+
+    return query.filter_by(name=name).first()
+
+
 @base.session_aware()
-def update_periodic_call(id, values, session=None):
-    pcall = get_periodic_call(id)
+def update_periodic_call(name, values, session=None):
+    pcall = get_periodic_call_by_name(name)
 
     if not pcall:
-        raise RuntimeError('Periodic call not found for id: %s' % id)
+        raise RuntimeError('Periodic call not found for name: %s' % id)
 
     pcall.update(values.copy())
 
@@ -61,10 +67,10 @@ def update_periodic_call(id, values, session=None):
 
 
 @base.session_aware()
-def delete_periodic_call(id, session=None):
-    pcall = get_periodic_call(id)
+def delete_periodic_call(name, session=None):
+    pcall = get_periodic_call_by_name(name)
 
     if not pcall:
-        raise RuntimeError('Periodic call not found for id: %s' % id)
+        raise RuntimeError('Periodic call not found for name: %s' % id)
 
     session.delete(pcall)
