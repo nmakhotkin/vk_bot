@@ -13,8 +13,8 @@ import crython
 
 from vk_bot import bot
 from vk_bot import config
-from vk_bot import utils
 from vk_bot.utils import shell as sh_utils
+from vk_bot.utils import utils
 
 
 CONF = config.CONF

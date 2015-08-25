@@ -8,20 +8,20 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import logging
-
 import requests
 import urlparse
 import vk
 
 from vk_bot import config
-from vk_bot import utils
+from vk_bot.utils import log as logging
+from vk_bot.utils import utils
 
-LOG = logging.getLogger(__name__)
+
+logging.configure()
 CONF = config.CONF
-
 MAIN_CHAT_ID = CONF.get('chat', 'main')
 BOT = None
+LOG = logging.getLogger(__name__)
 
 
 def get_bot():

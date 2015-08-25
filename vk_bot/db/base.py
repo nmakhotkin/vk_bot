@@ -16,7 +16,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy import orm
 
 from vk_bot import config
-from vk_bot import utils
+from vk_bot.utils import utils
 
 
 CONF = config.CONF
