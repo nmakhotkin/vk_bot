@@ -11,18 +11,21 @@
 
 import datetime
 import json
+import time
+import threading
 
 from croniter import croniter
-import crython
 
 from vk_bot import bot
 from vk_bot import config
 from vk_bot.db import api
+from vk_bot.utils import log as logging
 from vk_bot.utils import shell as sh_utils
 from vk_bot.utils import utils
 
 
 CONF = config.CONF
+LOG = logging.getLogger(__name__)
 
 DOLLAR_CHART_URL = (
     "http://j1.forexpf.ru/delta/prochart?type=USDRUB&amount=335"
@@ -32,6 +35,12 @@ PERIODIC_CALLS = []
 
 
 def periodic_call(pattern=None, **kwargs):
+    """Decorator for wrapping new periodic calls
+
+    :param pattern: cron-pattern, type: string
+    :param kwargs: arguments for function, dict.
+    :return:
+    """
     def decorator(func):
         PERIODIC_CALLS.append(
             {
@@ -73,10 +82,56 @@ def initialize_periodic_calls():
             api.update_periodic_call(name, values)
 
 
-@crython.job(expr=CONF.get('cron', 'send_uptime'))
+def get_next_periodic_calls():
+    return api.get_next_periodic_calls(datetime.datetime.now())
+
+
+def get_next_time(pattern, start_time):
+    return croniter(pattern, start_time).get_next(datetime.datetime)
+
+
+def process_periodic_calls():
+    """Long running thread processing next periodic calls
+
+    :return:
+    """
+    while True:
+        calls_to_process = get_next_periodic_calls()
+
+        while not calls_to_process:
+            calls = api.get_periodic_calls()
+
+            now = datetime.datetime.now()
+            nearest = min([c.execution_time for c in calls])
+
+            time_to_sleep = (nearest - now).total_seconds()
+
+            LOG.info("Sleeping %s..." % time_to_sleep)
+
+            time.sleep(time_to_sleep if time_to_sleep > 0 else 0)
+            calls_to_process = get_next_periodic_calls()
+
+        for call in calls_to_process:
+            func = utils.import_class(call.target_method)
+            arguments = json.loads(call.arguments)
+
+            api.update_periodic_call(
+                call.name,
+                {
+                    'execution_time': get_next_time(
+                        call.pattern, call.execution_time
+                    )
+                }
+            )
+            t = threading.Thread(target=func, kwargs=arguments)
+
+            t.start()
+
+
 @utils.log_execution("Sending uptime...",
                      "Uptime is sent.",
                      "Sending uptime failed")
+@periodic_call(pattern=CONF.get('cron', 'send_uptime'))
 def send_uptime():
     uptime = sh_utils.execute_command('uptime')
     uptime_pp = uptime[:uptime.find('  ') - 1].strip()
@@ -86,10 +141,10 @@ def send_uptime():
     bot.get_bot().send_to_main(uptime_pp)
 
 
-@crython.job(expr=CONF.get('cron', 'send_dollar_info'))
 @utils.log_execution("Sending dollar info...",
                      "Dollar info sent.",
                      "Sending dollar info failed")
+@periodic_call(pattern=CONF.get('cron', 'send_dollar_info'))
 def send_dollar_info():
     dollar_info = utils.get_dollar_info()
 
@@ -103,9 +158,3 @@ def send_dollar_info():
         DOLLAR_CHART_URL,
         text
     )
-
-
-def setup():
-    crython.tab.start()
-
-    return crython.tab

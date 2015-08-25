@@ -13,6 +13,8 @@ import BeautifulSoup
 from eventlet import corolocal
 import requests
 import shutil
+import sys
+import traceback
 import threading
 import time
 import urllib
@@ -119,6 +121,18 @@ def get_dollar_info():
         'today': tags[0].text,
         'tomorrow': tags[1].text
     }
+
+
+def import_class(import_str):
+    """Returns a class from a string including module and class."""
+    mod_str, _sep, class_str = import_str.rpartition('.')
+    __import__(mod_str)
+    try:
+        return getattr(sys.modules[mod_str], class_str)
+    except AttributeError:
+        raise ImportError('Class %s cannot be found (%s)' %
+                          (class_str,
+                           traceback.format_exception(*sys.exc_info())))
 
 
 def log_execution(message_before, message_after, message_exc=None):

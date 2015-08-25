@@ -1,5 +1,4 @@
 croniter
-crython
 pbr
 six
 vk==2.0b0

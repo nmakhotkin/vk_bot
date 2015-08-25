@@ -16,7 +16,7 @@ from vk_bot.utils import file_utils
 
 
 CONF = config.CONF
-LOG_FORMAT = '%(asctime)s %(module)-17s %(levelname)-8s: %(message)s'
+LOG_FORMAT = '%(asctime)s %(module)-25s %(levelname)-8s: %(message)s'
 
 
 def configure():

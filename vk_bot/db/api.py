@@ -55,6 +55,16 @@ def get_periodic_call_by_name(name):
 
 
 @base.session_aware()
+def get_next_periodic_calls(time, session=None):
+    query = base.model_query(models.PeriodicCall)
+
+    query = query.filter(models.PeriodicCall.execution_time < time)
+    query = query.order_by(models.PeriodicCall.execution_time)
+
+    return query.all()
+
+
+@base.session_aware()
 def update_periodic_call(name, values, session=None):
     pcall = get_periodic_call_by_name(name)
 
