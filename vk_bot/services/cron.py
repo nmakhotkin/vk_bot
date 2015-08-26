@@ -154,6 +154,7 @@ def send_dollar_info():
         % (dollar_info['today'], dollar_info['tomorrow'])
     )
 
+    __import__("ipdb").set_trace()
     bot.get_bot().send_to_main_picture(
         DOLLAR_CHART_URL,
         text

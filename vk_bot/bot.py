@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2015 - Nikolay Makhotkin.
 #
 # Licensed under the Whatever You Want License.
@@ -77,12 +78,19 @@ class VkBot(object):
         )
 
     def send_to_main_picture(self, picture_url, message=None):
-        photo_id = self._get_photo_id(picture_url)
+        try:
+            photo_id = self._get_photo_id(picture_url)
+        except Exception as e:
+            LOG.exception(e)
+            photo_id = None
 
         params = {
-            'attachment': photo_id,
             'chat_id': self.main_chat['id']
         }
+
+        if photo_id:
+            params['attachment'] = photo_id
+            message += u"\nКартинка не загрузилась."
 
         if message:
             params.update({'message': message})
@@ -94,8 +102,11 @@ class VkBot(object):
         server_url = self.api.photos.getMessagesUploadServer()
         return server_url.get('upload_url')
 
+    @utils.with_retry()
     def _get_photo_id(self, photo_url):
         server_url = self._get_server_url()
+
+        LOG.info("Server upload URL: %s" % server_url)
 
         photo_path = utils.download_picture(photo_url)
 
@@ -107,6 +118,9 @@ class VkBot(object):
             data[key] = value
 
         resp = requests.post(url, data, files=files)
+
+        if resp.status_code not in range(200, 399):
+            raise RuntimeError("Request is unsuccessful: %s" % resp.content)
 
         if not resp.json().get('photo'):
             raise RuntimeError("The photo is not uploaded properly.")
