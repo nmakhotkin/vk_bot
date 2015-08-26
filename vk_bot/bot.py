@@ -90,6 +90,7 @@ class VkBot(object):
 
         if photo_id:
             params['attachment'] = photo_id
+        else:
             message += u"\nКартинка не загрузилась."
 
         if message:

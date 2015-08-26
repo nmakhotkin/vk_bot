@@ -89,8 +89,9 @@ def with_retry(count=3, delay=1, accept_none=False):
                         raise Exception("The function returns None.")
 
                     return result
-                except Exception as e:
-                    LOG.exception("Retry got error: %s" % e)
+                except Exception:
+                    formatted = traceback.format_exception(*sys.exc_info())
+                    LOG.exception("Retry got error: %s" % formatted)
 
                     counter += 1
                     time.sleep(delay)
@@ -146,11 +147,13 @@ def log_execution(message_before, message_after, message_exc=None):
                 LOG.info(message_after)
 
                 return result
-            except Exception as e:
+            except Exception:
+                formatted = traceback.format_exception(*sys.exc_info())
                 if not message_exc:
-                    LOG.warn(str(e))
+                    LOG.warn(formatted)
                 else:
-                    LOG.warn("%s:\n%s" % (message_exc, e))
+                    LOG.warn("%s:" % message_exc)
+                    LOG.exception(formatted)
 
         return wrapped
     return decorator
