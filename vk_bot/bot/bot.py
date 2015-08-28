@@ -120,6 +120,29 @@ class VkBot(object):
             message=message
         )
 
+    def answer_on_message(self, message, answer):
+        user_id = message['user_id']
+        chat_id = message.get('chat_id')
+
+        user_id = user_id if not chat_id else None
+
+        self.send_to(answer, user_id=user_id, chat_id=chat_id)
+
+    def send_to(self, message, user_id=None, chat_id=None):
+        if not (bool(user_id) ^ bool(chat_id)):
+            raise RuntimeError(
+                "Only one of [user_id, chat_id] should be specified."
+            )
+
+        params = {'message': message}
+
+        if user_id:
+            params['user_id'] = user_id
+        elif chat_id:
+            params['chat_id'] = chat_id
+
+        return self.api.messages.send(**params)
+
     def send_to_main_picture(self, picture_url, message=None):
         try:
             photo_id = self._get_photo_id(picture_url)
@@ -140,6 +163,16 @@ class VkBot(object):
             params.update({'message': message})
 
         return self.api.messages.send(**params)
+
+    def get_user_name(self, user_id):
+        user = self.api.users.get(
+            user_ids=user_id
+        )
+
+        if not user:
+            return
+
+        return user[0]['first_name']
 
     @utils.with_retry()
     def _get_server_url(self):

@@ -18,3 +18,5 @@ connection = sqlite:///vk_bot.sqlite
 [cron]
 send_uptime = 0 7 * 0 *
 send_dollar_info = 0 7 * * *
+
+process_commands = * * * * * *

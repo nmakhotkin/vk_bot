@@ -14,7 +14,7 @@ import logging
 from vk_bot import config
 config.parse()
 
-from vk_bot import bot
+from vk_bot.bot import bot
 
 
 logging.basicConfig(level=logging.INFO)

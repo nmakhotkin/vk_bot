@@ -16,7 +16,8 @@ import threading
 
 from croniter import croniter
 
-from vk_bot import bot
+from vk_bot.bot import bot
+from vk_bot.bot import commands
 from vk_bot import config
 from vk_bot.db import api
 from vk_bot.utils import log as logging
@@ -158,3 +159,22 @@ def send_dollar_info():
         DOLLAR_CHART_URL,
         text
     )
+
+
+@periodic_call(pattern=CONF.get('cron', 'process_commands'))
+def process_commands():
+    vk_bot = bot.get_bot()
+
+    messages = vk_bot.get_unread_messages()
+
+    for msg in messages:
+        if utils.is_command(msg['body']):
+            try:
+                commands.execute_cmd(msg, msg['body'])
+            except Exception as e:
+                e_msg = "'%s' cmd failed: %s" % (msg['body'], e.message)
+                LOG.warn(e_msg)
+                vk_bot.answer_on_message(msg, e_msg)
+
+    if messages:
+        vk_bot.mark_messages_as_read(messages)

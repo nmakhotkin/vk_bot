@@ -157,3 +157,7 @@ def log_execution(message_before, message_after, message_exc=None):
 
         return wrapped
     return decorator
+
+
+def is_command(string):
+    return string.startswith('bot')
