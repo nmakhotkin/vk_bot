@@ -98,7 +98,6 @@ def process_periodic_calls():
     """
     while True:
         calls_to_process = get_next_periodic_calls()
-
         while not calls_to_process:
             calls = api.get_periodic_calls()
 
@@ -106,10 +105,11 @@ def process_periodic_calls():
             nearest = min([c.execution_time for c in calls])
 
             time_to_sleep = (nearest - now).total_seconds()
+            time_to_sleep = time_to_sleep if time_to_sleep > 0 else 1
 
-            LOG.info("Sleeping %s..." % time_to_sleep)
+            LOG.info("Sleeping for %s s..." % time_to_sleep)
 
-            time.sleep(time_to_sleep if time_to_sleep > 0 else 0)
+            time.sleep(time_to_sleep)
             calls_to_process = get_next_periodic_calls()
 
         for call in calls_to_process:
