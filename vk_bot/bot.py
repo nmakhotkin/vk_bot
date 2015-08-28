@@ -71,6 +71,49 @@ class VkBot(object):
 
         return self._main_chat
 
+    def get_unread_messages(self):
+        read_found = False
+        unread = []
+        offset = 0
+        batch_size = 10
+
+        while not read_found:
+            messages = self._get_messages(offset, batch_size)
+
+            messages = messages['items']
+
+            for index, msg in enumerate(messages):
+                if msg['read_state'] == 1:
+                    read_found = True
+                    messages = messages[:index]
+
+                    break
+
+            offset += batch_size
+            unread += messages
+
+        return unread
+
+    def mark_messages_as_read(self, messages):
+        message_ids = [str(m['id']) for m in messages]
+
+        string_ids = ','.join(message_ids)
+
+        return self.api.messages.markAsRead(
+            message_ids=string_ids
+        )
+
+    def _get_messages(self, offset=0, count=1, last_id=None):
+        params = {
+            'offset': offset,
+            'count': count
+        }
+
+        if last_id:
+            params['last_message_id'] = last_id
+
+        return self.api.messages.get(**params)
+
     def send_to_main(self, message):
         return self.api.messages.send(
             chat_id=self.main_chat['id'],
