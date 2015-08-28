@@ -170,6 +170,7 @@ def process_commands():
     for msg in messages:
         if utils.is_command(msg['body']):
             try:
+                LOG.info("Executing command '%s'..." % msg['body'])
                 commands.execute_cmd(msg, msg['body'])
             except Exception as e:
                 e_msg = "'%s' cmd failed: %s" % (msg['body'], e.message)

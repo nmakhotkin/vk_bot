@@ -21,7 +21,7 @@ CONF = config.CONF
 def configure():
     l_c.fileConfig(
         file_utils.get_file_path('../logging.conf'),
-        disable_existing_loggers=False
+        disable_existing_loggers=True
     )
 
 
