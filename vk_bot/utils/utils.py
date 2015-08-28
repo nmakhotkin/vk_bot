@@ -160,4 +160,4 @@ def log_execution(message_before, message_after, message_exc=None):
 
 
 def is_command(string):
-    return string.startswith('bot')
+    return string.startswith('bot ')
