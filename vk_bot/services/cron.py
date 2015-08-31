@@ -12,7 +12,8 @@
 import datetime
 import json
 import time
-import threading
+import eventlet
+from eventlet import semaphore
 
 from croniter import croniter
 
@@ -33,9 +34,10 @@ DOLLAR_CHART_URL = (
     "&chart_height=340&chart_width=660&grtype=2&tictype=1&iId=5"
 )
 PERIODIC_CALLS = []
+SEMAPHORES = {}
 
 
-def periodic_call(pattern=None, **kwargs):
+def periodic_call(pattern=None, threads=None, **kwargs):
     """Decorator for wrapping new periodic calls
 
     :param pattern: cron-pattern, type: string
@@ -48,7 +50,8 @@ def periodic_call(pattern=None, **kwargs):
                 'name': func.__name__,
                 'func_path': '.'.join([func.__module__, func.__name__]),
                 'pattern': pattern,
-                'arguments': kwargs
+                'arguments': kwargs,
+                'threads': threads or 1
             }
         )
         return func
@@ -72,15 +75,18 @@ def initialize_periodic_calls():
             'execution_time': next_time,
             'pattern': pattern,
             'target_method': target_method,
-            'arguments': json.dumps(arguments)
+            'arguments': json.dumps(arguments),
+            'processing': False
         }
 
         if not pcall_db:
             values.update({'name': name})
 
-            api.create_periodic_call(values)
+            pcall_db = api.create_periodic_call(values)
         else:
-            api.update_periodic_call(name, values)
+            pcall_db = api.update_periodic_call(name, values)
+
+        SEMAPHORES[pcall_db.id] = semaphore.Semaphore(pcall.get('threads', 1))
 
 
 def get_next_periodic_calls():
@@ -89,6 +95,26 @@ def get_next_periodic_calls():
 
 def get_next_time(pattern, start_time):
     return croniter(pattern, start_time).get_next(datetime.datetime)
+
+
+def end_processing(gt, pcall):
+    next_time = get_next_time(
+        pcall.pattern,
+        datetime.datetime.now()
+    )
+
+    next_time2 = get_next_time(
+        pcall.pattern, pcall.execution_time
+    )
+
+    api.update_periodic_call(
+        pcall.name,
+        {
+            'execution_time': max(next_time, next_time2),
+            'processing': False
+        }
+    )
+    SEMAPHORES[pcall.id].release()
 
 
 def process_periodic_calls():
@@ -121,12 +147,13 @@ def process_periodic_calls():
                 {
                     'execution_time': get_next_time(
                         call.pattern, call.execution_time
-                    )
+                    ),
+                    'processing': True
                 }
             )
-            t = threading.Thread(target=func, kwargs=arguments)
-
-            t.start()
+            SEMAPHORES[call.id].acquire()
+            t = eventlet.spawn(func, **arguments)
+            t.link(end_processing, call)
 
 
 @utils.log_execution("Sending uptime...",

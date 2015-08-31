@@ -75,7 +75,7 @@ class VkBot(object):
         read_found = False
         unread = []
         offset = 0
-        batch_size = 10
+        batch_size = 50
 
         while not read_found:
             messages = self._get_messages(offset, batch_size)

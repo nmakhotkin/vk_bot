@@ -59,6 +59,7 @@ def get_next_periodic_calls(time, session=None):
     query = base.model_query(models.PeriodicCall)
 
     query = query.filter(models.PeriodicCall.execution_time < time)
+    query = query.filter_by(processing=False)
     query = query.order_by(models.PeriodicCall.execution_time)
 
     return query.all()

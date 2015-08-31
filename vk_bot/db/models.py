@@ -35,3 +35,4 @@ class PeriodicCall(base.ModelBase):
         default='0 0 0 30 2 0 0'  # Set default to 'never'.
     )
     remaining_executions = sa.Column(sa.Integer)
+    processing = sa.Column(sa.Boolean, default=False)
