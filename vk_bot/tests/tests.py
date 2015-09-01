@@ -22,7 +22,7 @@ class VkBotTest(base.BaseTest):
         except Exception:
             photo_id = None
 
-        print "photo_id: %s" % photo_id
+        print("photo_id: %s" % photo_id)
         if photo_id:
             pattern = re.compile("photo[0-9]+_[0-9]+")
             self.assertIn(photo_id, re.findall(pattern, photo_id))

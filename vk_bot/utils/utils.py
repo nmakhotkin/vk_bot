@@ -14,9 +14,9 @@ from eventlet import corolocal
 import requests
 import shutil
 import sys
-import traceback
 import threading
 import time
+import traceback
 import urllib
 
 from vk_bot.utils import log as logging

@@ -10,10 +10,10 @@
 #    limitations under the License.
 
 import datetime
-import json
-import time
 import eventlet
 from eventlet import semaphore
+import json
+import time
 
 from croniter import croniter
 
