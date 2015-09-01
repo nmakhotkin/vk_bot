@@ -22,6 +22,7 @@ logging.configure()
 CONF = config.CONF
 MAIN_CHAT_ID = CONF.get('chat', 'main')
 BOT = None
+NEW_MESSAGE_EVENT = 4
 LOG = logging.getLogger(__name__)
 
 
@@ -49,7 +50,9 @@ class VkBot(object):
             user_password=password,
             scope=scope
         )
+        self.ts = None
         self._main_chat = None
+        self.msg_longpoll_server_info = None
 
     @property
     def api(self):
@@ -175,13 +178,72 @@ class VkBot(object):
         return user[0]['first_name']
 
     @utils.with_retry()
-    def _get_server_url(self):
+    def _get_photo_server_url(self):
         server_url = self.api.photos.getMessagesUploadServer()
         return server_url.get('upload_url')
 
     @utils.with_retry()
+    def _get_messages_longpoll_server(self, timeout):
+        server_info = self.api.messages.getLongPollServer()
+
+        server_info['wait'] = timeout
+
+        self.msg_longpoll_server_info = server_info.copy()
+
+        return self._construct_msg_long_poll_url(**server_info)
+
+    @staticmethod
+    def _construct_msg_long_poll_url(server, key, ts, wait=20):
+        info = {
+            'server': server,
+            'key': key,
+            'ts': ts,
+            'wait': wait
+        }
+
+        return ("http://%(server)s?act=a_check&"
+                "key=%(key)s&ts=%(ts)s&wait=%(wait)s&mode=2" % info)
+
+    def _wait_for_event(self, timeout=20, ts=None):
+        if not self.msg_longpoll_server_info:
+            url = self._get_messages_longpoll_server(timeout)
+        else:
+            url = self._construct_msg_long_poll_url(
+                self.msg_longpoll_server_info['server'],
+                self.msg_longpoll_server_info['key'],
+                ts,
+                timeout
+            )
+
+        return requests.get(url).json()
+
+    def wait_for_messages(self):
+        ts = self.ts
+        is_msg = False
+        msg_ids = []
+
+        while not is_msg:
+            resp = self._wait_for_event(ts=ts)
+
+            LOG.info("Event: %s" % resp)
+
+            ts = resp['ts']
+            updates = resp['updates']
+
+            for update in updates:
+                if update[0] == NEW_MESSAGE_EVENT:
+                    is_msg = True
+                    msg_ids += [str(update[1])]
+
+        self.ts = ts
+        string_ids = ','.join(msg_ids)
+
+        messages = self.api.messages.getById(message_ids=string_ids)
+        return messages['items']
+
+    @utils.with_retry()
     def _get_photo_id(self, photo_url):
-        server_url = self._get_server_url()
+        server_url = self._get_photo_server_url()
 
         LOG.info("Server upload URL: %s" % server_url)
 

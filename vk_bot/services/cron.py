@@ -133,7 +133,7 @@ def process_periodic_calls():
             time_to_sleep = (nearest - now).total_seconds()
             time_to_sleep = time_to_sleep if time_to_sleep > 0 else 1
 
-            LOG.info("Sleeping for %s s..." % time_to_sleep)
+            LOG.debug("Sleeping for %s s..." % time_to_sleep)
 
             time.sleep(time_to_sleep)
             calls_to_process = get_next_periodic_calls()
@@ -192,7 +192,7 @@ def send_dollar_info():
 def process_commands():
     vk_bot = bot.get_bot()
 
-    messages = vk_bot.get_unread_messages()
+    messages = vk_bot.wait_for_messages()
 
     for msg in messages:
         if utils.is_command(msg['body']):

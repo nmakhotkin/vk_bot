@@ -9,15 +9,12 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import logging
-
 from vk_bot import config
 config.parse()
 
 from vk_bot.bot import bot
+from vk_bot.utils import log as logging
 
-
-logging.basicConfig(level=logging.INFO)
 
 LOG = logging.getLogger(__name__)
 
