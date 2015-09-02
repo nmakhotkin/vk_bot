@@ -159,5 +159,10 @@ def log_execution(message_before, message_after, message_exc=None):
     return decorator
 
 
+COMMAND_TRIGGERS = [u"нет!"]
+
+
 def is_command(string):
-    return string.startswith('bot ')
+    string = string.lower()
+
+    return string.startswith('bot ') or string in COMMAND_TRIGGERS

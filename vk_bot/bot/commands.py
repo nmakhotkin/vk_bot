@@ -45,8 +45,11 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
 
 
 def execute_cmd(message, command):
+    command = command.lower()
+
     command = command.split(' ')
-    command = command[1:]
+    if command[0] == 'bot':
+        command = command[1:]
     parser = get_parser(message)
 
     args = parser.parse_args(command)
@@ -81,6 +84,11 @@ def get_parser(message):
     )
     parser.set_defaults(func=send_dollar_info)
 
+    parser = subparser.add_parser(
+        u'нет!'
+    )
+    parser.set_defaults(func=send_no)
+
     return global_parser
 
 
@@ -109,3 +117,7 @@ def hello(message, args):
 
 def send_dollar_info(message, args):
     actions.send_dollar_info(message)
+
+
+def send_no(message, args):
+    actions.send_no(message)
