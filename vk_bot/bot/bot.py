@@ -123,15 +123,20 @@ class VkBot(object):
             message=message
         )
 
-    def answer_on_message(self, message, answer):
+    def answer_on_message(self, message, answer, photo_url=None):
         user_id = message['user_id']
         chat_id = message.get('chat_id')
 
         user_id = user_id if not chat_id else None
 
-        self.send_to(answer, user_id=user_id, chat_id=chat_id)
+        self.send_to(
+            answer,
+            user_id=user_id,
+            chat_id=chat_id,
+            photo_url=photo_url
+        )
 
-    def send_to(self, message, user_id=None, chat_id=None):
+    def send_to(self, message, user_id=None, chat_id=None, photo_url=None):
         if not (bool(user_id) ^ bool(chat_id)):
             raise RuntimeError(
                 "Only one of [user_id, chat_id] should be specified."
@@ -143,6 +148,18 @@ class VkBot(object):
             params['user_id'] = user_id
         elif chat_id:
             params['chat_id'] = chat_id
+
+        if photo_url:
+            try:
+                photo_id = self._get_photo_id(photo_url)
+            except Exception as e:
+                LOG.exception(e)
+                photo_id = None
+
+            if photo_id:
+                params['attachment'] = photo_id
+            else:
+                message += u"\nКартинка не загрузилась."
 
         return self.api.messages.send(**params)
 

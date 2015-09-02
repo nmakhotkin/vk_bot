@@ -17,22 +17,18 @@ import time
 
 from croniter import croniter
 
+from vk_bot.bot import actions
 from vk_bot.bot import bot
 from vk_bot.bot import commands
 from vk_bot import config
 from vk_bot.db import api
 from vk_bot.utils import log as logging
-from vk_bot.utils import shell as sh_utils
 from vk_bot.utils import utils
 
 
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
 
-DOLLAR_CHART_URL = (
-    "http://j1.forexpf.ru/delta/prochart?type=USDRUB&amount=335"
-    "&chart_height=340&chart_width=660&grtype=2&tictype=1&iId=5"
-)
 PERIODIC_CALLS = []
 SEMAPHORES = {}
 
@@ -161,12 +157,7 @@ def process_periodic_calls():
                      "Sending uptime failed")
 @periodic_call(pattern=CONF.get('cron', 'send_uptime'))
 def send_uptime():
-    uptime = sh_utils.execute_command('uptime')
-    uptime_pp = uptime[:uptime.find('  ') - 1].strip()
-    uptime_pp = "Kolyan's computer uptime:\n%s" % uptime_pp
-
-    # Send uptime information to main chat.
-    bot.get_bot().send_to_main(uptime_pp)
+    return actions.send_uptime()
 
 
 @utils.log_execution("Sending dollar info...",
@@ -174,18 +165,7 @@ def send_uptime():
                      "Sending dollar info failed")
 @periodic_call(pattern=CONF.get('cron', 'send_dollar_info'))
 def send_dollar_info():
-    dollar_info = utils.get_dollar_info()
-
-    text = (
-        u"Курс доллара на сегодня: %s.\n"
-        u"Курс доллара на завтра: %s"
-        % (dollar_info['today'], dollar_info['tomorrow'])
-    )
-
-    bot.get_bot().send_to_main_picture(
-        DOLLAR_CHART_URL,
-        text
-    )
+    return actions.send_dollar_info()
 
 
 @periodic_call(pattern=CONF.get('cron', 'process_commands'))

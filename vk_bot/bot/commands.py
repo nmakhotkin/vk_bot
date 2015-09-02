@@ -12,6 +12,7 @@
 import argparse
 import sys
 
+from vk_bot.bot import actions
 from vk_bot.bot import bot
 from vk_bot import version
 
@@ -74,6 +75,12 @@ def get_parser(message):
     parser = subparser.add_parser('help', help="Shows help.")
     parser.set_defaults(func=show_help)
 
+    parser = subparser.add_parser(
+        'get-dollar-info',
+        help="Shows current dollar information (picture and text)"
+    )
+    parser.set_defaults(func=send_dollar_info)
+
     return global_parser
 
 
@@ -98,3 +105,7 @@ def hello(message, args):
         vk_bot.send_to(msg_to_send, user_id=user_id)
     else:
         vk_bot.send_to(msg_to_send, chat_id=chat_id)
+
+
+def send_dollar_info(message, args):
+    actions.send_dollar_info(message)
