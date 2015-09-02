@@ -200,7 +200,7 @@ class VkBot(object):
         return server_url.get('upload_url')
 
     @utils.with_retry()
-    def _get_messages_longpoll_server(self, timeout):
+    def _get_messages_longpoll_server(self, timeout=20):
         server_info = self.api.messages.getLongPollServer()
 
         server_info['wait'] = timeout
