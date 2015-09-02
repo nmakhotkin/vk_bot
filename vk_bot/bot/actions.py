@@ -22,11 +22,13 @@ DOLLAR_CHART_URL = (
 )
 
 NO_URLS = [
-    "http://vignette2.wikia.nocookie.net/dont-starve/images/5/58/%D0%9D%D0%95%D0%A2!.jpg/revision/latest?cb=20130716113721&path-prefix=ru",
+    "http://vignette2.wikia.nocookie.net/dont-starve/images/5/58/%D0"
+    "%9D%D0%95%D0%A2!.jpg/revision/latest?cb=20130716113721&path-prefix=ru",
     "http://ratingmax.ru/wp-content/uploads/2015/06/net.jpg",
     "http://img.dni.ru/binaries/v3_main/285381.jpg",
     "https://ucare.timepad.ru/ef4ca052-f7db-4860-b59b-41bd3af47fe1/",
-    "http://www.2do2go.ru/uploads/a26d318ca40dee9989be11dc4a0ba979_w256_h256.jpg"
+    "http://www.2do2go.ru/uploads/"
+    "a26d318ca40dee9989be11dc4a0ba979_w256_h256.jpg"
 ]
 
 
@@ -65,3 +67,9 @@ def send_no(message):
     vk_bot = bot.get_bot()
 
     vk_bot.answer_on_message(message, "", photo_url=random.choice(NO_URLS))
+
+
+def rulez(message):
+    vk_bot = bot.get_bot()
+
+    vk_bot.answer_on_message(message, "Absolutely agree!")

@@ -89,6 +89,9 @@ def get_parser(message):
     )
     parser.set_defaults(func=send_no)
 
+    parser = subparser.add_parser('rulez')
+    parser.set_defaults(func=rulez)
+
     return global_parser
 
 
@@ -121,3 +124,7 @@ def send_dollar_info(message, args):
 
 def send_no(message, args):
     actions.send_no(message)
+
+
+def rulez(message, args):
+    actions.rulez(message)
