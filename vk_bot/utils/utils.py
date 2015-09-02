@@ -159,7 +159,7 @@ def log_execution(message_before, message_after, message_exc=None):
     return decorator
 
 
-COMMAND_TRIGGERS = [u"нет!"]
+COMMAND_TRIGGERS = [u"нет!", u"котик"]
 
 
 def is_command(string):

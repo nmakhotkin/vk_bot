@@ -30,6 +30,7 @@ NO_URLS = [
     "http://www.2do2go.ru/uploads/"
     "a26d318ca40dee9989be11dc4a0ba979_w256_h256.jpg"
 ]
+CAT_URL = "http://thecatapi.com/api/images/get?format=src&type=gif&size=med"
 
 
 def send_dollar_info(message=None):
@@ -73,3 +74,9 @@ def rulez(message):
     vk_bot = bot.get_bot()
 
     vk_bot.answer_on_message(message, "Absolutely agree!")
+
+
+def cat(message):
+    vk_bot = bot.get_bot()
+
+    vk_bot.answer_on_message(message, "Котики", photo_url=CAT_URL)

@@ -84,13 +84,14 @@ def get_parser(message):
     )
     parser.set_defaults(func=send_dollar_info)
 
-    parser = subparser.add_parser(
-        u'нет!'
-    )
+    parser = subparser.add_parser(u'нет!')
     parser.set_defaults(func=send_no)
 
     parser = subparser.add_parser('rulez')
     parser.set_defaults(func=rulez)
+
+    parser = subparser.add_parser(u'котик')
+    parser.set_defaults(func=cat)
 
     return global_parser
 
@@ -128,3 +129,7 @@ def send_no(message, args):
 
 def rulez(message, args):
     actions.rulez(message)
+
+
+def cat(message, args):
+    actions.cat(message)
