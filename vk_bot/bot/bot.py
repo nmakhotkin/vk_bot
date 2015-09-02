@@ -217,6 +217,12 @@ class VkBot(object):
 
         return requests.get(url).json()
 
+    def _handle_longpoll_fail(self, resp):
+        error = resp.get('failed')
+
+        if error in [2, 3]:
+            self._get_messages_longpoll_server()
+
     def wait_for_messages(self):
         ts = self.ts
         is_msg = False
@@ -225,9 +231,17 @@ class VkBot(object):
         while not is_msg:
             resp = self._wait_for_event(ts=ts)
 
+            if 'ts' in resp:
+                ts = resp['ts']
+
+            if 'failed' in resp:
+                LOG.warn("LongPoll connection failed: %s" % resp)
+
+                self._handle_longpoll_fail(resp)
+                continue
+
             LOG.info("Event: %s" % resp)
 
-            ts = resp['ts']
             updates = resp['updates']
 
             for update in updates:
