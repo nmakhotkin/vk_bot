@@ -79,4 +79,4 @@ def rulez(message):
 def cat(message):
     vk_bot = bot.get_bot()
 
-    vk_bot.answer_on_message(message, "Котики", photo_url=CAT_URL)
+    vk_bot.answer_on_message(message, "Котики", doc_url=CAT_URL)

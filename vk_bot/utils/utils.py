@@ -11,6 +11,7 @@
 
 import BeautifulSoup
 from eventlet import corolocal
+import imghdr
 import requests
 import shutil
 import sys
@@ -18,6 +19,7 @@ import threading
 import time
 import traceback
 import urllib
+import urlparse
 
 from vk_bot.utils import log as logging
 
@@ -91,7 +93,7 @@ def with_retry(count=3, delay=1, accept_none=False):
                     return result
                 except Exception:
                     formatted = traceback.format_exception(*sys.exc_info())
-                    LOG.exception("Retry got error: %s" % formatted)
+                    LOG.warn("Retry got error: %s" % formatted)
 
                     counter += 1
                     time.sleep(delay)
@@ -101,12 +103,17 @@ def with_retry(count=3, delay=1, accept_none=False):
     return decorator
 
 
-def download_picture(url):
+def download_file(url):
     file_path, _ = urllib.urlretrieve(url)
 
     if '.' not in file_path:
-        shutil.move(file_path, '%s.png' % file_path)
-        file_path += '.png'
+        extension = imghdr.what(file_path)
+
+        if not extension:
+            extension = 'png'
+
+        shutil.move(file_path, '%s.%s' % (file_path, extension))
+        file_path += '.%s' % extension
 
     return file_path
 
@@ -122,6 +129,30 @@ def get_dollar_info():
         'today': tags[0].text,
         'tomorrow': tags[1].text
     }
+
+
+def upload_file_on_server(server_url, file_url, entity_type='photo'):
+    file_path = download_file(file_url)
+
+    data = {}
+    files = {entity_type: (file_path, open(file_path, 'rb'))}
+    url = server_url.split('?')[0]
+    parsed_qs = urlparse.parse_qs(server_url.split('?')[1])
+    for key, value in parsed_qs.iteritems():
+        data[key] = value
+
+    resp = requests.post(url, data, files=files)
+
+    if resp.status_code not in range(200, 399):
+        raise RuntimeError("Request is unsuccessful: %s" % resp.content)
+
+    if not resp.json().get(entity_type):
+        raise RuntimeError(
+            "The %s is not uploaded properly: %s"
+            % (entity_type, resp.content)
+        )
+
+    return resp.json()
 
 
 def import_class(import_str):

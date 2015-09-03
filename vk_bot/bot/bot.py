@@ -10,7 +10,6 @@
 #    limitations under the License.
 
 import requests
-import urlparse
 import vk
 
 from vk_bot import config
@@ -31,7 +30,7 @@ def get_bot():
 
     if not BOT:
         app_id = CONF.get('auth', 'app_id')
-        scope = 'messages,friends,photos'
+        scope = 'messages,friends,photos,docs'
         email = CONF.get('auth', 'email')
         password = CONF.get('auth', 'password')
 
@@ -123,7 +122,8 @@ class VkBot(object):
             message=message
         )
 
-    def answer_on_message(self, message, answer, photo_url=None):
+    def answer_on_message(self, message, answer,
+                          photo_url=None, doc_url=None):
         user_id = message['user_id']
         chat_id = message.get('chat_id')
 
@@ -133,13 +133,20 @@ class VkBot(object):
             answer,
             user_id=user_id,
             chat_id=chat_id,
-            photo_url=photo_url
+            photo_url=photo_url,
+            doc_url=doc_url
         )
 
-    def send_to(self, message, user_id=None, chat_id=None, photo_url=None):
+    def send_to(self, message, user_id=None, chat_id=None,
+                photo_url=None, doc_url=None):
         if not (bool(user_id) ^ bool(chat_id)):
             raise RuntimeError(
                 "Only one of [user_id, chat_id] should be specified."
+            )
+
+        if photo_url and doc_url:
+            raise RuntimeError(
+                "Only at most one of [photo_url, doc_url] could be specified."
             )
 
         params = {'message': message}
@@ -149,23 +156,25 @@ class VkBot(object):
         elif chat_id:
             params['chat_id'] = chat_id
 
-        if photo_url:
+        if photo_url or doc_url:
             try:
-                photo_id = self._get_photo_id(photo_url)
+                media_url = photo_url or doc_url
+                media_type = 'photo' if photo_url else 'file'
+                media_id = self._get_media_id(media_url, media_type)
             except Exception as e:
                 LOG.exception(e)
-                photo_id = None
+                media_id = None
 
-            if photo_id:
-                params['attachment'] = photo_id
+            if media_id:
+                params['attachment'] = media_id
             else:
-                message += u"\nКартинка не загрузилась."
+                message += u"\nПрикрепление не загрузилось."
 
         return self.api.messages.send(**params)
 
     def send_to_main_picture(self, picture_url, message=None):
         try:
-            photo_id = self._get_photo_id(picture_url)
+            photo_id = self._get_media_id(picture_url)
         except Exception as e:
             LOG.exception(e)
             photo_id = None
@@ -197,6 +206,11 @@ class VkBot(object):
     @utils.with_retry()
     def _get_photo_server_url(self):
         server_url = self.api.photos.getMessagesUploadServer()
+        return server_url.get('upload_url')
+
+    @utils.with_retry()
+    def _get_docs_server_url(self):
+        server_url = self.api.docs.getUploadServer()
         return server_url.get('upload_url')
 
     @utils.with_retry()
@@ -273,36 +287,50 @@ class VkBot(object):
         return messages['items']
 
     @utils.with_retry()
-    def _get_photo_id(self, photo_url):
-        server_url = self._get_photo_server_url()
+    def _get_media_id(self, media_url, media_type='photo'):
+        if media_type not in ['photo', 'file']:
+            raise RuntimeError("Unsupported media type: %s" % media_type)
+
+        server_url = None
+        if media_type == 'photo':
+            server_url = self._get_photo_server_url()
+        elif media_type == 'file':
+            server_url = self._get_docs_server_url()
 
         LOG.info("Server upload URL: %s" % server_url)
 
-        photo_path = utils.download_picture(photo_url)
-
-        data = {}
-        files = {'photo': (photo_path, open(photo_path, 'rb'))}
-        url = server_url.split('?')[0]
-        parsed_qs = urlparse.parse_qs(server_url.split('?')[1])
-        for key, value in parsed_qs.iteritems():
-            data[key] = value
-
-        resp = requests.post(url, data, files=files)
-
-        if resp.status_code not in range(200, 399):
-            raise RuntimeError("Request is unsuccessful: %s" % resp.content)
-
-        if not resp.json().get('photo'):
-            raise RuntimeError("The photo is not uploaded properly.")
+        resp = utils.upload_file_on_server(
+            server_url,
+            media_url,
+            entity_type=media_type
+        )
 
         params = {
-            'server': resp.json()['server'],
-            'photo': [resp.json()['photo']],
-            'hash': [resp.json()['hash']]
+            media_type: [resp[media_type]]
         }
-        photo_info = self.api.photos.saveMessagesPhoto(**params)
 
-        return "photo%s_%s" % (photo_info[0]['owner_id'], photo_info[0]['id'])
+        if media_type == 'photo':
+            params.update({
+                'server': resp['server'],
+                'hash': [resp['hash']]
+            })
+
+        media_info = {}
+        if media_type == 'photo':
+            media_info = self.api.photos.saveMessagesPhoto(**params)
+        elif media_type == 'file':
+            media_info = self.api.docs.save(**params)
+
+            # That kind of hack.
+            media_type = 'doc'
+
+        return (
+            "%s%s_%s" % (
+                media_type,
+                media_info[0]['owner_id'],
+                media_info[0]['id']
+            )
+        )
 
     def test(self):
         LOG.info("Sending test info...")
