@@ -91,8 +91,8 @@ def with_retry(count=3, delay=1, accept_none=False):
                         raise Exception("The function returns None.")
 
                     return result
-                except Exception:
-                    formatted = traceback.format_exception(*sys.exc_info())
+                except Exception as e:
+                    formatted = traceback.format_exc()
                     LOG.warn("Retry got error: %s" % formatted)
 
                     counter += 1

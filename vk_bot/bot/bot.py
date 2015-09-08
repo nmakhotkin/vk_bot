@@ -235,6 +235,7 @@ class VkBot(object):
         return ("http://%(server)s?act=a_check&"
                 "key=%(key)s&ts=%(ts)s&wait=%(wait)s&mode=2" % info)
 
+    @utils.with_retry()
     def _wait_for_event(self, timeout=20, ts=None):
         if not self.msg_longpoll_server_info:
             url = self._get_messages_longpoll_server(timeout)
