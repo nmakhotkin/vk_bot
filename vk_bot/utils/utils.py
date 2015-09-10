@@ -9,7 +9,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import BeautifulSoup
+from bs4 import BeautifulSoup
 from eventlet import corolocal
 import imghdr
 import requests
@@ -18,8 +18,13 @@ import sys
 import threading
 import time
 import traceback
-import urllib
-import urlparse
+
+try:
+    from urllib import parse as urlparse
+    from urllib import request as download
+except ImportError:
+    import urlparse
+    import urllib as download
 
 from vk_bot.utils import log as logging
 
@@ -104,7 +109,7 @@ def with_retry(count=3, delay=1, accept_none=False):
 
 
 def download_file(url):
-    file_path, _ = urllib.urlretrieve(url)
+    file_path, _ = download.urlretrieve(url)
 
     if '.' not in file_path:
         extension = imghdr.what(file_path)
@@ -122,7 +127,7 @@ def get_dollar_info():
     url = 'http://kursnazavtra.info/'
     resp = requests.get(url)
 
-    parsed_html = BeautifulSoup.BeautifulSoup(resp.content)
+    parsed_html = BeautifulSoup(resp.content, "html5lib")
     tags = parsed_html.findAll('div', attrs={'class': 'style1'})
 
     return {
@@ -138,7 +143,7 @@ def upload_file_on_server(server_url, file_url, entity_type='photo'):
     files = {entity_type: (file_path, open(file_path, 'rb'))}
     url = server_url.split('?')[0]
     parsed_qs = urlparse.parse_qs(server_url.split('?')[1])
-    for key, value in parsed_qs.iteritems():
+    for key, value in parsed_qs.items():
         data[key] = value
 
     resp = requests.post(url, data, files=files)

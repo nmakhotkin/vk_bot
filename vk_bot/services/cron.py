@@ -180,7 +180,7 @@ def process_commands():
                 LOG.info("Executing command '%s'..." % msg['body'])
                 commands.execute_cmd(msg, msg['body'])
             except Exception as e:
-                e_msg = "'%s' cmd failed: %s" % (msg['body'], e.message)
+                e_msg = "'%s' cmd failed: %s" % (msg['body'], e)
                 LOG.warn(e_msg)
                 vk_bot.answer_on_message(msg, e_msg)
 

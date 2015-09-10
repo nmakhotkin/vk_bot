@@ -1,4 +1,4 @@
 croniter
 pbr
 six
-git+https://github.com/nmakhotkin/vk.git@2.0b1
+https://github.com/nmakhotkin/vk.git@2.0b1#egg=vk

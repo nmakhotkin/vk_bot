@@ -14,7 +14,6 @@ import sys
 
 from vk_bot.bot import actions
 from vk_bot.bot import bot
-from vk_bot import version
 
 
 class ArgumentParserError(Exception):
@@ -24,12 +23,10 @@ class ArgumentParserError(Exception):
 class ThrowingArgumentParser(argparse.ArgumentParser):
     def __init__(self,
                  prog=None,
-                 version=None,
                  vk_message=None,
                  **kwargs):
         super(ThrowingArgumentParser, self).__init__(
             prog,
-            version=version,
             **kwargs
         )
 
@@ -60,7 +57,6 @@ def execute_cmd(message, command):
 def get_parser(message):
     global_parser = ThrowingArgumentParser(
         'bot',
-        version=version.version_string(),
         vk_message=message,
         add_help=False
     )
@@ -84,13 +80,13 @@ def get_parser(message):
     )
     parser.set_defaults(func=send_dollar_info)
 
-    parser = subparser.add_parser(u'нет!')
+    parser = subparser.add_parser('нет!', help="Отвечает картинкой 'нет'")
     parser.set_defaults(func=send_no)
 
-    parser = subparser.add_parser('rulez')
+    parser = subparser.add_parser('rulez', help="Соглашается.")
     parser.set_defaults(func=rulez)
 
-    parser = subparser.add_parser(u'котик')
+    parser = subparser.add_parser('котик', help="Загружает анимашку котика.")
     parser.set_defaults(func=cat)
 
     return global_parser

@@ -1,0 +1,54 @@
+CHANGES
+=======
+
+* Improving with_retry function
+* Adding the possibility to upload docs
+* Bump target version to 0.3
+
+0.2
+---
+
+* Fix rerequesting LongPoll server
+* Changing file log level to INFO
+* Adding command 'котик'
+* Adding rulez command
+* Adding command "нет!"
+* Refactoring actions
+* Fixing rerequest for LongPoll server when failed
+* Adding help command; Improving help
+* Fixing pep8
+* Move reading new messages to LongPoll
+* Changing model of periodic calls
+* Improving logging
+* Improving logging
+* Fixing condition determining command from string
+* Adding new job for processing commands
+* Adding possibility to see unread messages
+* Bump new version in setup.cfg
+
+0.1
+---
+
+* Improving logging and change reqs
+* Handle error while uploading a photo
+* Improving logging
+* Drop usage of crython; Implementing my own cron iterator
+* Adding cron-like iterating to periodic calls
+* Adding logging configuration
+* Adding initial DB schema
+* Fixing sending dollar info: unicode issue
+* Adding sending dollar info feature
+* Refactoring utils
+* Fixing the way of downloading the images
+* Adding feature to send pictures as attachment
+* Drop usage of auth.py module
+* Deleting debug
+* Deleting periodic from config
+* Updating README.md
+* Deleting oslo.service requirement
+* Adding possibility to run functions on schedule
+* Update .gitignore
+* Fixing pep8 errors
+* Vk bot: Initial commit
+* Update README.md
+* Initial commit
