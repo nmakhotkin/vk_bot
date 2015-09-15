@@ -172,6 +172,8 @@ def send_dollar_info():
 def process_commands():
     vk_bot = bot.get_bot()
 
+    LOG.info("Reading messages...")
+
     messages = vk_bot.wait_for_messages()
 
     for msg in messages:

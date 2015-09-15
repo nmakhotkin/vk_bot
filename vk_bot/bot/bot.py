@@ -261,6 +261,8 @@ class VkBot(object):
         msg_ids = []
 
         while not is_msg:
+            LOG.info("Waiting for event...")
+
             resp = self._wait_for_event(ts=ts)
 
             if 'ts' in resp:
