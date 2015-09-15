@@ -17,7 +17,6 @@ from vk_bot.utils import log as logging
 from vk_bot.utils import utils
 
 
-logging.configure()
 CONF = config.CONF
 MAIN_CHAT_ID = CONF.get('chat', 'main')
 BOT = None

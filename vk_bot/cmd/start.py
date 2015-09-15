@@ -18,8 +18,14 @@ eventlet.monkey_patch(
     time=True
 )
 
+import vk as _ # noqa
 from vk_bot import config
 config.parse()
+
+# Configure logging right after vk is imported.
+from vk_bot.utils import log as logging
+
+logging.configure()
 
 from vk_bot.db import api
 from vk_bot.services import cron
