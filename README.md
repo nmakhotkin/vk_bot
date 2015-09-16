@@ -4,7 +4,7 @@ Vk bot provides the ways to see any activity at vk.com, publish info to specific
 Installation
 ------------
 
-Copy sample config to account.conf and fill it with auth data.
+Copy sample config `bot.conf.sample` to `bot.conf` and fill it with auth data.
 Install the package:
 
     pip install -e .

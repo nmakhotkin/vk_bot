@@ -4,7 +4,7 @@ from six.moves import configparser
 from vk_bot.utils import file_utils
 
 
-_ACCOUNT_FILE = '../account.conf'
+_ACCOUNT_FILE = '../bot.conf'
 CONF = None
 
 
