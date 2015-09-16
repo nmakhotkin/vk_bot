@@ -11,6 +11,9 @@
 
 import random
 
+from bs4 import BeautifulSoup
+import requests
+
 from vk_bot.bot import bot
 from vk_bot.utils import shell as sh_utils
 from vk_bot.utils import utils
@@ -31,6 +34,7 @@ NO_URLS = [
     "a26d318ca40dee9989be11dc4a0ba979_w256_h256.jpg"
 ]
 CAT_URL = "http://thecatapi.com/api/images/get?format=src&type=gif&size=med"
+ANEKDOT_URL = "http://anekdot.ru/random/anekdot"
 
 
 def send_dollar_info(message=None):
@@ -80,3 +84,19 @@ def cat(message):
     vk_bot = bot.get_bot()
 
     vk_bot.answer_on_message(message, "Котики", doc_url=CAT_URL)
+
+
+def anekdot(message):
+    vk_bot = bot.get_bot()
+
+    resp = requests.get(ANEKDOT_URL)
+    parsed = BeautifulSoup(resp.content, "html5lib")
+
+    anekdots = parsed.findAll('div', {'class': 'text'})
+
+    if not anekdots:
+        vk_bot.answer_on_message(message, "Страница с анекдотами недоступна")
+
+    anekdot = "\n".join(list(anekdots[0].strings))
+
+    vk_bot.answer_on_message(message, anekdot)

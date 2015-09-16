@@ -15,6 +15,14 @@ import sys
 from vk_bot.bot import actions
 from vk_bot.bot import bot
 
+DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот"]
+
+
+def is_command(string):
+    string = string.lower()
+
+    return string.startswith('bot ') or string in DIRECT_COMMAND_TRIGGERS
+
 
 class ArgumentParserError(Exception):
     pass
@@ -89,6 +97,9 @@ def get_parser(message):
     parser = subparser.add_parser('котик', help="Загружает анимашку котика.")
     parser.set_defaults(func=cat)
 
+    parser = subparser.add_parser('анекдот', help="Печатает случайный анекдот.")
+    parser.set_defaults(func=anekdot)
+
     return global_parser
 
 
@@ -129,3 +140,7 @@ def rulez(message, args):
 
 def cat(message, args):
     actions.cat(message)
+
+
+def anekdot(message, args):
+    actions.anekdot(message)
