@@ -97,7 +97,10 @@ def get_parser(message):
     parser = subparser.add_parser('котик', help="Загружает анимашку котика.")
     parser.set_defaults(func=cat)
 
-    parser = subparser.add_parser('анекдот', help="Печатает случайный анекдот.")
+    parser = subparser.add_parser(
+        'анекдот',
+        help="Печатает случайный анекдот."
+    )
     parser.set_defaults(func=anekdot)
 
     return global_parser

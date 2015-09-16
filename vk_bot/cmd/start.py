@@ -18,7 +18,7 @@ eventlet.monkey_patch(
     time=True
 )
 
-import vk as _ # noqa
+import vk as _  # noqa
 from vk_bot import config
 config.parse()
 

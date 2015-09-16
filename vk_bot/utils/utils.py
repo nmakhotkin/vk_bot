@@ -23,8 +23,8 @@ try:
     from urllib import parse as urlparse
     from urllib import request as download
 except ImportError:
-    import urlparse
     import urllib as download
+    import urlparse
 
 from vk_bot.utils import log as logging
 
@@ -96,7 +96,7 @@ def with_retry(count=3, delay=1, accept_none=False):
                         raise Exception("The function returns None.")
 
                     return result
-                except Exception as e:
+                except Exception:
                     formatted = traceback.format_exc()
                     LOG.warn("Retry got error: %s" % formatted)
 
