@@ -88,6 +88,12 @@ def get_parser(message):
     )
     parser.set_defaults(func=send_dollar_info)
 
+    parser = subparser.add_parser(
+        'get-euro-info',
+        help="\tShows current euro information (picture and text)"
+    )
+    parser.set_defaults(func=send_euro_info)
+
     parser = subparser.add_parser('нет!', help="Отвечает картинкой 'нет'")
     parser.set_defaults(func=send_no)
 
@@ -131,6 +137,10 @@ def hello(message, args):
 
 def send_dollar_info(message, args):
     actions.send_dollar_info(message)
+
+
+def send_euro_info(message, args):
+    actions.send_euro_info(message)
 
 
 def send_no(message, args):

@@ -24,6 +24,10 @@ DOLLAR_CHART_URL = (
     "http://j1.forexpf.ru/delta/prochart?type=USDRUB&amount=335"
     "&chart_height=340&chart_width=660&grtype=2&tictype=1&iId=5"
 )
+EURO_CHART_URL = (
+    "http://j1.forexpf.ru/delta/prochart?type=EURRUB&amount=335&"
+    "chart_height=340&chart_width=660&grtype=2&tictype=1&iId=5"
+)
 
 NO_URLS = [
     "http://vignette2.wikia.nocookie.net/dont-starve/images/5/58/%D0"
@@ -57,6 +61,28 @@ def send_dollar_info(message=None):
             message,
             text,
             DOLLAR_CHART_URL
+        )
+
+
+def send_euro_info(message=None):
+    euro_info = utils.get_euro_info()
+
+    text = (
+        u"Курс евро на сегодня: %s.\n"
+        u"Курс евро на завтра: %s"
+        % (euro_info['today'], euro_info['tomorrow'])
+    )
+
+    if not message:
+        bot.get_bot().send_to_main_picture(
+            EURO_CHART_URL,
+            text
+        )
+    else:
+        bot.get_bot().answer_on_message(
+            message,
+            text,
+            EURO_CHART_URL
         )
 
 

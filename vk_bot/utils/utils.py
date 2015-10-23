@@ -136,6 +136,19 @@ def get_dollar_info():
     }
 
 
+def get_euro_info():
+    url = 'http://kursnazavtra.info/'
+    resp = requests.get(url)
+
+    parsed_html = BeautifulSoup(resp.content, "html5lib")
+    tags = parsed_html.findAll('div', attrs={'class': 'style1'})
+
+    return {
+        'today': tags[2].text,
+        'tomorrow': tags[3].text
+    }
+
+
 def upload_file_on_server(server_url, file_url, entity_type='photo'):
     file_path = download_file(file_url)
 

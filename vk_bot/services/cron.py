@@ -168,6 +168,14 @@ def send_dollar_info():
     return actions.send_dollar_info()
 
 
+@utils.log_execution("Sending euro info...",
+                     "Euro info sent.",
+                     "Sending euro info failed")
+@periodic_call(pattern=CONF.get('cron', 'send_euro_info'))
+def send_euro_info():
+    return actions.send_euro_info()
+
+
 @periodic_call(pattern=CONF.get('cron', 'process_commands'))
 def process_commands():
     vk_bot = bot.get_bot()
