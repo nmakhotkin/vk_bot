@@ -96,7 +96,13 @@ def get_parser(message):
     )
     parser.set_defaults(func=hello)
 
-    parser = subparser.add_parser('help', help="Shows help.")
+    parser = subparser.add_parser('help', help="Показывает справку.")
+    parser.add_argument(
+        'command',
+        metavar='<command>',
+        help='Показывает справку по команде.',
+        nargs='?'
+    )
     parser.set_defaults(func=show_help)
 
     parser = subparser.add_parser(
@@ -160,8 +166,19 @@ def show_help(message, args):
     parser = get_parser(message)
     vk_bot = bot.get_bot()
 
-    help = parser.format_help()
-    vk_bot.answer_on_message(message, help)
+    if not args.command:
+        help_str = parser.format_help()
+        vk_bot.answer_on_message(message, help_str)
+
+        return
+
+    commands = parser._subparsers._actions[0]
+
+    if args.command not in commands.choices:
+        raise RuntimeError("Command does not exist: %s" % args.command)
+
+    help_str = commands.choices[args.command].format_help()
+    vk_bot.answer_on_message(message, help_str)
 
 
 def hello(message, args):
