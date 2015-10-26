@@ -12,16 +12,28 @@
 import argparse
 import sys
 
+import shlex
+
 from vk_bot.bot import actions
 from vk_bot.bot import bot
 
 DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот"]
+CONTAIN_COMMAND_TRIGGERS = [u"напомни"]
 
 
 def is_command(string):
     string = string.lower()
 
-    return string.startswith('bot ') or string in DIRECT_COMMAND_TRIGGERS
+    is_cmd = string.startswith('bot ') or string in DIRECT_COMMAND_TRIGGERS
+
+    if is_cmd:
+        return is_cmd
+
+    for cmd in CONTAIN_COMMAND_TRIGGERS:
+        if string.startswith(cmd):
+            return True
+
+    return False
 
 
 class ArgumentParserError(Exception):
@@ -50,14 +62,19 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
 
 
 def execute_cmd(message, command):
-    command = command.lower()
+    splitter = shlex.shlex(command, posix=True)
+    splitter.whitespace_split = True
 
-    command = command.split(' ')
-    if command[0] == 'bot':
-        command = command[1:]
+    arg_list = list(splitter)
+    arg_list[0] = arg_list[0].lower()
+
+    if arg_list[0] == 'bot':
+        arg_list = arg_list[1:]
+        arg_list[0] = arg_list[0].lower()
+
     parser = get_parser(message)
 
-    args = parser.parse_args(command)
+    args = parser.parse_args(arg_list)
 
     return args.func(message, args)
 
@@ -109,6 +126,33 @@ def get_parser(message):
     )
     parser.set_defaults(func=anekdot)
 
+    parser = subparser.add_parser(
+        'напомни',
+        help="Добавляет напоминалку по заданному времени."
+    )
+    parser.add_argument(
+        '-pattern',
+        dest='pattern',
+        help='Cron-паттерн',
+        type=str,
+        metavar='<* * * * * *>'
+    )
+    parser.add_argument(
+        '-count',
+        dest='count',
+        type=int,
+        default=1,
+        help='Количество повторений',
+        metavar='<integer>'
+    )
+    parser.add_argument(
+        'text',
+        type=str,
+        help='Текст напоминания',
+        metavar='<text>'
+    )
+    parser.set_defaults(func=add_reminder)
+
     return global_parser
 
 
@@ -157,3 +201,11 @@ def cat(message, args):
 
 def anekdot(message, args):
     actions.anekdot(message)
+
+
+def add_reminder(message, args):
+    raise NotImplementedError("Not Implemented.")
+
+    # print(args.pattern)
+    # print(args.count)
+    # print(args.text)
