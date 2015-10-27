@@ -10,7 +10,9 @@
 #    limitations under the License.
 
 from bs4 import BeautifulSoup
+import datetime
 from eventlet import corolocal
+from eventlet import semaphore
 import imghdr
 import requests
 import shutil
@@ -18,6 +20,8 @@ import sys
 import threading
 import time
 import traceback
+
+from croniter import croniter
 
 try:
     from urllib import parse as urlparse
@@ -33,6 +37,7 @@ from vk_bot.utils import log as logging
 _th_loc_storage = threading.local()
 
 
+SEMAPHORES = {}
 LOG = logging.getLogger(__name__)
 
 
@@ -82,6 +87,21 @@ def set_thread_local(var_name, val):
                 corolocal.get_ident()] = {}
 
         gl_storage[var_name] = val
+
+
+def get_next_time(pattern, start_time=None):
+    if not start_time:
+        start_time = datetime.datetime.now()
+
+    return croniter(pattern, start_time).get_next(datetime.datetime)
+
+
+def add_semaphore(key, thread_num):
+    SEMAPHORES[key] = semaphore.Semaphore(thread_num)
+
+
+def remove_semaphore(key):
+    del SEMAPHORES[key]
 
 
 def with_retry(count=3, delay=1, accept_none=False):

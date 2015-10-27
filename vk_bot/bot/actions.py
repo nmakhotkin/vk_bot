@@ -42,6 +42,12 @@ CAT_URL = "http://thecatapi.com/api/images/get?format=src&type=gif&size=med"
 ANEKDOT_URL = "http://anekdot.ru/random/anekdot"
 
 
+def answer_on_message(message, text):
+    vk_bot = bot.get_bot()
+
+    vk_bot.answer_on_message(message, text)
+
+
 def send_dollar_info(message=None):
     dollar_info = utils.get_dollar_info()
 

@@ -11,7 +11,6 @@
 
 import datetime
 import eventlet
-from eventlet import semaphore
 import json
 import time
 
@@ -30,7 +29,6 @@ CONF = config.CONF
 LOG = logging.getLogger(__name__)
 
 PERIODIC_CALLS = []
-SEMAPHORES = {}
 
 
 def periodic_call(pattern=None, threads=None, **kwargs):
@@ -82,35 +80,39 @@ def initialize_periodic_calls():
         else:
             pcall_db = api.update_periodic_call(name, values)
 
-        SEMAPHORES[pcall_db.id] = semaphore.Semaphore(pcall.get('threads', 1))
+        utils.add_semaphore(pcall_db.id, pcall.get('threads', 1))
 
 
 def get_next_periodic_calls():
     return api.get_next_periodic_calls(datetime.datetime.now())
 
 
-def get_next_time(pattern, start_time):
-    return croniter(pattern, start_time).get_next(datetime.datetime)
-
-
 def end_processing(gt, pcall):
-    next_time = get_next_time(
+    next_time = utils.get_next_time(
         pcall.pattern,
         datetime.datetime.now()
     )
 
-    next_time2 = get_next_time(
+    next_time2 = utils.get_next_time(
         pcall.pattern, pcall.execution_time
     )
 
-    api.update_periodic_call(
-        pcall.name,
-        {
-            'execution_time': max(next_time, next_time2),
-            'processing': False
-        }
-    )
-    SEMAPHORES[pcall.id].release()
+    if (pcall.remaining_executions is not None
+            and pcall.remaining_executions == 0):
+        api.delete_periodic_call(pcall.name)
+
+        utils.SEMAPHORES[pcall.id].release()
+        utils.remove_semaphore(pcall.id)
+    else:
+        api.update_periodic_call(
+            pcall.name,
+            {
+                'execution_time': max(next_time, next_time2),
+                'processing': False
+            }
+        )
+
+        utils.SEMAPHORES[pcall.id].release()
 
 
 def process_periodic_calls():
@@ -138,18 +140,23 @@ def process_periodic_calls():
             func = utils.import_class(call.target_method)
             arguments = json.loads(call.arguments)
 
-            api.update_periodic_call(
+            values = {
+                'execution_time': utils.get_next_time(
+                    call.pattern, call.execution_time
+                ),
+                'processing': True
+            }
+
+            if call.remaining_executions and call.remaining_executions > 0:
+                values['remaining_executions'] = call.remaining_executions - 1
+
+            updated_call = api.update_periodic_call(
                 call.name,
-                {
-                    'execution_time': get_next_time(
-                        call.pattern, call.execution_time
-                    ),
-                    'processing': True
-                }
+                values
             )
-            SEMAPHORES[call.id].acquire()
+            utils.SEMAPHORES[call.id].acquire()
             t = eventlet.spawn(func, **arguments)
-            t.link(end_processing, call)
+            t.link(end_processing, updated_call)
 
 
 @utils.log_execution("Sending uptime...",
