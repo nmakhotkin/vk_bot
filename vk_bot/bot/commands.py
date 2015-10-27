@@ -233,9 +233,9 @@ def add_reminder(message, args):
     count = args.count
     name = message['user_id']
 
-    if count > 5:
+    if count > 5 or count < 1:
         raise RuntimeError(
-            "Ограничение на количество повторений: 5; текущее: %s" % count
+            "Ограничение на количество повторений: 0-5; текущее: %s" % count
         )
 
     existing_reminders = db_api.get_periodic_calls(name=name)
