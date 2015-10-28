@@ -18,6 +18,7 @@ import shlex
 from vk_bot.bot import actions
 from vk_bot.bot import bot
 from vk_bot.db import api as db_api
+from vk_bot.services import reminders
 from vk_bot.utils import utils
 
 
@@ -238,6 +239,7 @@ def add_reminder(message, args):
             "Ограничение на количество повторений: 0-5; текущее: %s" % count
         )
 
+    reminders.validate_reminder_text(args.text)
     existing_reminders = db_api.get_periodic_calls(name=name)
 
     if len(existing_reminders) > 0:
