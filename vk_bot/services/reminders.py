@@ -12,8 +12,11 @@
 import re
 
 
-REMINDER_COMMAND = "bot напомни"
-REMINDER_CMD_PATTERN = re.compile("^ *%s.*", re.IGNORECASE)
+REMINDER_COMMAND = "напомни"
+REMINDER_CMD_PATTERN = re.compile(
+    "^ *(bot {0}|{0}).*".format(REMINDER_COMMAND),
+    re.IGNORECASE
+)
 
 
 def validate_reminder_text(text):
