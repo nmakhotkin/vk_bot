@@ -140,12 +140,7 @@ def process_periodic_calls():
             func = utils.import_class(call.target_method)
             arguments = json.loads(call.arguments)
 
-            values = {
-                'execution_time': utils.get_next_time(
-                    call.pattern, call.execution_time
-                ),
-                'processing': True
-            }
+            values = {'processing': True}
 
             if call.remaining_executions and call.remaining_executions > 0:
                 values['remaining_executions'] = call.remaining_executions - 1
