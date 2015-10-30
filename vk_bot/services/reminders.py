@@ -31,9 +31,9 @@ def validate_reminder_text(text):
 
 
 def validate_reminder(count, user, text):
-    max_count = CONF.get('commands', 'reminders_count')
+    max_count = int(CONF.get('commands', 'reminders_count'))
 
-    if max_count > 5 or count < 1:
+    if count > max_count or count < 1:
         raise RuntimeError(
             "Ограничение на количество повторений: 0-%s; текущее: %s"
             % (max_count, count)
@@ -42,7 +42,7 @@ def validate_reminder(count, user, text):
     validate_reminder_text(text)
     existing_reminders = db_api.get_periodic_calls(user_id=user)
 
-    max_reminders = CONF.get('commands', 'reminders_per_user')
+    max_reminders = int(CONF.get('commands', 'reminders_per_user'))
     if len(existing_reminders) >= max_reminders:
         raise RuntimeError(
             "Нельзя создать больше %s напоминалок, у Вас уже есть %s. "
@@ -57,6 +57,8 @@ def get_reminders(user):
 
 
 def add_reminder(message, name, count, user, pattern, text):
+    validate_reminder(count, user, text)
+
     next_time = utils.get_next_time(pattern)
 
     pcall = db_api.create_periodic_call(
