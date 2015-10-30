@@ -21,3 +21,7 @@ send_dollar_info = 0 7 * * *
 send_euro_info = 0 7 * * *
 
 process_commands = * * * * * *
+
+[commands]
+reminders_per_user = 2
+reminders_count = 10

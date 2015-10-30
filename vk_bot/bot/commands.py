@@ -17,13 +17,13 @@ import shlex
 
 from vk_bot.bot import actions
 from vk_bot.bot import bot
-from vk_bot.db import api as db_api
+from vk_bot import config
 from vk_bot.services import reminders
-from vk_bot.utils import utils
 
 
-DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот"]
+DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот", u"напоминалки"]
 CONTAIN_COMMAND_TRIGGERS = [u"напомни", u"забудь"]
+CONF = config.CONF
 
 
 def is_command(string):
@@ -164,8 +164,20 @@ def get_parser(message):
     parser.set_defaults(func=add_reminder)
 
     parser = subparser.add_parser(
+        'напоминалки',
+        help="Удаляет собственную напоминалку."
+    )
+    parser.set_defaults(func=get_reminders)
+
+    parser = subparser.add_parser(
         'забудь',
         help="Удаляет собственную напоминалку."
+    )
+    parser.add_argument(
+        'id',
+        type=str,
+        help='Идентификатор напоминалки',
+        metavar='<id>'
     )
     parser.set_defaults(func=remove_reminder)
 
@@ -230,55 +242,48 @@ def anekdot(message, args):
     actions.anekdot(message)
 
 
-def add_reminder(message, args):
-    count = args.count
-    name = message['user_id']
-
-    if count > 5 or count < 1:
-        raise RuntimeError(
-            "Ограничение на количество повторений: 0-5; текущее: %s" % count
-        )
-
-    reminders.validate_reminder_text(args.text)
-    existing_reminders = db_api.get_periodic_calls(name=name)
-
-    if len(existing_reminders) > 0:
-        raise RuntimeError(
-            "Нельзя создать больше одной напоминалки, у Вас уже есть одна. "
-            "Удалить можно с помощью команды 'забудь'."
-        )
-
-    next_time = utils.get_next_time(args.pattern)
-
-    pcall = db_api.create_periodic_call(
-        {
-            'name': name,
-            'arguments': json.dumps({
-                'message': message,
-                'text': args.text
-            }),
-            'target_method': 'vk_bot.bot.actions.answer_on_message',
-            'pattern': args.pattern,
-            'remaining_executions': args.count,
-            'execution_time': next_time
-        }
-    )
-
-    utils.add_semaphore(pcall.id, 1)
+def get_reminders(message, args):
+    user_reminders = reminders.get_reminders(message['user_id'])
 
     vk_bot = bot.get_bot()
-    vk_bot.answer_on_message(message, "Напоминалка создана.")
+
+    if not user_reminders:
+        vk_bot.answer_on_message(message, "Ещё нет напоминалок.")
+        return
+
+    output = []
+    for index, r in enumerate(user_reminders):
+        arguments = json.loads(r.arguments)
+        output.append("%s. %s, '%s'" % (index + 1, r.name, arguments['text']))
+
+    vk_bot.answer_on_message(message, '\n'.join(output))
+
+
+def add_reminder(message, args):
+    name = message['id']
+    user_id = message['user_id']
+
+    reminder = reminders.add_reminder(
+        message,
+        name,
+        args.count,
+        user_id,
+        args.pattern,
+        args.text
+    )
+
+    vk_bot = bot.get_bot()
+    vk_bot.answer_on_message(
+        message,
+        "Напоминалка создана; id = %s." % reminder.name
+    )
 
 
 def remove_reminder(message, args):
-    name = message['user_id']
+    name = args.id
+    user = message['user_id']
 
-    existing_reminders = db_api.get_periodic_calls(name=name)
-
-    if not existing_reminders:
-        raise RuntimeError("У Вас еще нет напоминалок.")
-
-    db_api.delete_periodic_call(name)
+    reminders.delete_reminder(name, user)
 
     vk_bot = bot.get_bot()
     vk_bot.answer_on_message(message, "Напоминалка удалена.")

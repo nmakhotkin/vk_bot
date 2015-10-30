@@ -25,6 +25,7 @@ class PeriodicCall(base.ModelBase):
         primary_key=True
     )
     name = sa.Column(st.String(80), unique=True)
+    user_id = sa.Column(st.String(20), nullable=True)
 
     target_method = sa.Column(st.String(length=200))
     arguments = sa.Column(st.Text())
@@ -32,7 +33,7 @@ class PeriodicCall(base.ModelBase):
     pattern = sa.Column(
         sa.String(100),
         nullable=True,
-        default='0 0 0 30 2 0 0'  # Set default to 'never'.
+        default='0 0 0 30 2 0'  # Set default to 'never'.
     )
     remaining_executions = sa.Column(sa.Integer)
     processing = sa.Column(sa.Boolean, default=False)

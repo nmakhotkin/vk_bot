@@ -149,6 +149,10 @@ def process_periodic_calls():
                 call.name,
                 values
             )
+
+            if not utils.SEMAPHORES.get(call.id):
+                utils.add_semaphore(call.id, 1)
+
             utils.SEMAPHORES[call.id].acquire()
             t = eventlet.spawn(func, **arguments)
             t.link(end_processing, updated_call)
