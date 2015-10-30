@@ -165,7 +165,7 @@ def get_parser(message):
 
     parser = subparser.add_parser(
         'напоминалки',
-        help="Удаляет собственную напоминалку."
+        help="Показывает собственные напоминалки."
     )
     parser.set_defaults(func=get_reminders)
 
