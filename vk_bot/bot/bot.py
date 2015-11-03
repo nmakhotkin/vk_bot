@@ -260,7 +260,7 @@ class VkBot(object):
         msg_ids = []
 
         while not is_msg:
-            LOG.info("Waiting for event...")
+            LOG.debug("Waiting for event...")
 
             resp = self._wait_for_event(ts=ts)
 
@@ -273,9 +273,12 @@ class VkBot(object):
                 self._handle_longpoll_fail(resp)
                 continue
 
-            LOG.info("Event: %s" % resp)
-
             updates = resp['updates']
+
+            if updates:
+                LOG.info("Event: %s" % resp)
+            else:
+                LOG.debug("Event: %s" % resp)
 
             for update in updates:
                 if update[0] == NEW_MESSAGE_EVENT:
