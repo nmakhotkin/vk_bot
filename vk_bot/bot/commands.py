@@ -10,6 +10,7 @@
 #    limitations under the License.
 
 import argparse
+import copy
 import json
 import sys
 
@@ -156,6 +157,11 @@ def get_parser(message):
         metavar='<integer>'
     )
     parser.add_argument(
+        '-broadcast',
+        action='store_true',
+        help='Флаг, показывающий, отправлять ли напоминалку в главный чат',
+    )
+    parser.add_argument(
         'text',
         type=str,
         help='Текст напоминания',
@@ -263,8 +269,15 @@ def add_reminder(message, args):
     name = message['id']
     user_id = message['user_id']
 
+    vk_bot = bot.get_bot()
+
+    msg_to_db = copy.deepcopy(message)
+
+    if args.broadcast:
+        msg_to_db['chat_id'] = vk_bot.main_chat['id']
+
     reminder = reminders.add_reminder(
-        message,
+        msg_to_db,
         name,
         args.count,
         user_id,
@@ -272,7 +285,6 @@ def add_reminder(message, args):
         args.text
     )
 
-    vk_bot = bot.get_bot()
     vk_bot.answer_on_message(
         message,
         "Напоминалка создана; id = %s." % reminder.name
