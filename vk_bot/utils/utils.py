@@ -14,6 +14,7 @@ import datetime
 from eventlet import corolocal
 from eventlet import semaphore
 import imghdr
+import re
 import requests
 import shutil
 import sys
@@ -39,6 +40,10 @@ _th_loc_storage = threading.local()
 
 SEMAPHORES = {}
 LOG = logging.getLogger(__name__)
+URL_PATTERN = re.compile(
+    'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|'
+    '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+)
 
 
 def _get_greenlet_local_storage():
@@ -126,6 +131,10 @@ def with_retry(count=3, delay=1, accept_none=False):
             raise RuntimeError("The function is failed to execute.")
         return wrapped
     return decorator
+
+
+def get_urls(string):
+    return URL_PATTERN.findall(string)
 
 
 def download_file(url):

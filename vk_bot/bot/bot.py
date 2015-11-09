@@ -136,6 +136,38 @@ class VkBot(object):
             doc_url=doc_url
         )
 
+    def _upload_photos_by_urls_in_message(self, message):
+        """Uploads photos by given URLs in message, cut these URLs out message
+        and get dict containing media ids.
+
+        :param message:
+        :return: Dict structure for vk API messages.send.
+        """
+        urls = utils.get_urls(message)
+
+        if not urls:
+            return {'message': message}
+
+        ids = []
+
+        for url in urls:
+            photo_id = None
+
+            try:
+                photo_id = self._get_media_id(url, 'photo')
+            except Exception as e:
+                pass
+            else:
+                message = message.replace(url, '', 1)
+            finally:
+                if photo_id:
+                    ids.append(photo_id)
+
+        return {
+            'message': message,
+            'attachment': ','.join(ids)
+        }
+
     def send_to(self, message, user_id=None, chat_id=None,
                 photo_url=None, doc_url=None):
         if not (bool(user_id) ^ bool(chat_id)):
@@ -148,7 +180,7 @@ class VkBot(object):
                 "Only at most one of [photo_url, doc_url] could be specified."
             )
 
-        params = {'message': message}
+        params = self._upload_photos_by_urls_in_message(message)
 
         if user_id:
             params['user_id'] = user_id
@@ -165,7 +197,12 @@ class VkBot(object):
                 media_id = None
 
             if media_id:
-                params['attachment'] = media_id
+                if params.get('attachment'):
+                    params['attachment'] = ','.join(
+                        [params['attachment'], media_id]
+                    )
+                else:
+                    params['attachment'] = media_id
             else:
                 message += u"\nПрикрепление не загрузилось."
 
