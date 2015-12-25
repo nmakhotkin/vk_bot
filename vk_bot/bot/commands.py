@@ -260,7 +260,15 @@ def get_reminders(message, args):
     output = []
     for index, r in enumerate(user_reminders):
         arguments = json.loads(r.arguments)
-        output.append("%s. %s, '%s'" % (index + 1, r.name, arguments['text']))
+        output.append(
+            "%s. %s, '%s', След.выполнение: %s"
+            % (
+                index + 1,
+                r.name,
+                arguments['text'],
+                r.execution_time.strftime("%H:%M:%S, %d.%m.%Y")
+            )
+        )
 
     vk_bot.answer_on_message(message, '\n'.join(output))
 
