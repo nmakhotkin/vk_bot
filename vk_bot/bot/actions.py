@@ -92,15 +92,6 @@ def send_euro_info(message=None):
         )
 
 
-def send_uptime():
-    uptime = six.text_type(sh_utils.execute_command('uptime'))
-    uptime_pp = uptime[uptime.find(' ') - 1:str(uptime).find('  ') - 1].strip()
-    uptime_pp = "Kolyan's computer uptime:\n%s" % uptime_pp
-
-    # Send uptime information to main chat.
-    bot.get_bot().send_to_main(uptime_pp)
-
-
 def send_no(message):
     vk_bot = bot.get_bot()
 

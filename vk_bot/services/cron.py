@@ -158,14 +158,6 @@ def process_periodic_calls():
             t.link(end_processing, updated_call)
 
 
-@utils.log_execution("Sending uptime...",
-                     "Uptime is sent.",
-                     "Sending uptime failed")
-@periodic_call(pattern=CONF.get('cron', 'send_uptime'))
-def send_uptime():
-    return actions.send_uptime()
-
-
 @utils.log_execution("Sending dollar info...",
                      "Dollar info sent.",
                      "Sending dollar info failed")
