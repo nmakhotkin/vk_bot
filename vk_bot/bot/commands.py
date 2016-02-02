@@ -162,6 +162,12 @@ def get_parser(message):
         help='Флаг, показывающий, отправлять ли напоминалку в главный чат',
     )
     parser.add_argument(
+        '-user-id',
+        type=str,
+        help='Идентификатор пользователя',
+        metavar='<1234567>'
+    )
+    parser.add_argument(
         'text',
         type=str,
         help='Текст напоминания',
@@ -281,8 +287,16 @@ def add_reminder(message, args):
 
     msg_to_db = copy.deepcopy(message)
 
+    if args.broadcast and args.user_id:
+        raise RuntimeError(
+            "Невозможно одновременно использовать -broadcast и -user-id"
+        )
+
     if args.broadcast:
         msg_to_db['chat_id'] = vk_bot.main_chat['id']
+
+    if args.user_id:
+        msg_to_db['user_id'] = args.user_id
 
     reminder = reminders.add_reminder(
         msg_to_db,
