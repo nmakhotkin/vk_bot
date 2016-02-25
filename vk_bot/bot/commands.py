@@ -23,7 +23,7 @@ from vk_bot.services import reminders
 
 
 DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот", u"напоминалки"]
-CONTAIN_COMMAND_TRIGGERS = [u"напомни", u"забудь"]
+CONTAIN_COMMAND_TRIGGERS = [u"напомни ", u"забудь ", u"погода "]
 CONF = config.CONF
 
 
@@ -193,6 +193,17 @@ def get_parser(message):
     )
     parser.set_defaults(func=remove_reminder)
 
+    parser = subparser.add_parser(
+        'погода',
+        help="Показывает текущую погоду."
+    )
+    parser.add_argument(
+        'city',
+        type=str,
+        help='Город для прогноза'
+    )
+    parser.set_defaults(func=send_weather)
+
     return global_parser
 
 
@@ -240,6 +251,10 @@ def send_euro_info(message, args):
 
 def send_no(message, args):
     actions.send_no(message)
+
+
+def send_weather(message, args):
+    actions.send_weather(message, args.city)
 
 
 def rulez(message, args):

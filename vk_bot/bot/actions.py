@@ -10,13 +10,11 @@
 #    limitations under the License.
 
 import random
-import six
 
 from bs4 import BeautifulSoup
 import requests
 
 from vk_bot.bot import bot
-from vk_bot.utils import shell as sh_utils
 from vk_bot.utils import utils
 
 
@@ -90,6 +88,37 @@ def send_euro_info(message=None):
             text,
             EURO_CHART_URL
         )
+
+
+def send_weather(message, city):
+    r = requests.get('http://wttr.in/%s' % city)
+    parser = BeautifulSoup(r.content, "html5lib")
+    text = parser.find('body').text
+
+    if text.find('┌') == -1:
+        raise RuntimeError(text)
+
+    forecast = text[:text.find('┌')]
+
+    forecast_array = forecast.split('\n')
+
+    # Remove first 15 characters starting 3rd line.
+    replacement = []
+    for item in forecast_array[3:]:
+        replacement += [item[15:]]
+
+    replacement[0] = "Forecast:\t%s" % replacement[0]
+    replacement[1] = "Temperature:\t%s" % replacement[1]
+    replacement[2] = "Wind:\t\t%s" % replacement[2]
+    replacement[3] = "Visibility:\t%s" % replacement[3]
+    replacement[4] = "Precipitation:\t%s" % replacement[4]
+
+    forecast_array[3:] = replacement
+
+    forecast_array += ["Forecast is taken from wttr.in"]
+
+    vk_bot = bot.get_bot()
+    vk_bot.answer_on_message(message, '\n'.join(forecast_array))
 
 
 def send_no(message):

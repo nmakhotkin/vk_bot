@@ -137,7 +137,9 @@ class VkBot(object):
         )
 
     def _upload_photos_by_urls_in_message(self, message):
-        """Uploads photos by given URLs in message, cut these URLs out message
+        """Adds photos in message by their URLs.
+
+        Uploads photos by given URLs in message, cut these URLs out message
         and get dict containing media ids.
 
         :param message:
@@ -155,7 +157,7 @@ class VkBot(object):
 
             try:
                 photo_id = self._get_media_id(url, 'photo')
-            except Exception as e:
+            except Exception:
                 pass
             else:
                 message = message.replace(url, '', 1)
