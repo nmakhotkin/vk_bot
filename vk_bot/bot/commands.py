@@ -23,7 +23,7 @@ from vk_bot.services import reminders
 
 
 DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот", u"напоминалки"]
-CONTAIN_COMMAND_TRIGGERS = [u"напомни ", u"забудь ", u"погода "]
+CONTAIN_COMMAND_TRIGGERS = [u"напомни ", u"забудь ", u"погода"]
 CONF = config.CONF
 
 
@@ -200,7 +200,9 @@ def get_parser(message):
     parser.add_argument(
         'city',
         type=str,
-        help='Город для прогноза'
+        nargs='?',
+        help='Город для прогноза',
+        default='saratov'
     )
     parser.set_defaults(func=send_weather)
 
