@@ -5,7 +5,7 @@ pbr
 requests>=2.5.2
 six
 SQLAlchemy<1.1.0,>=0.9.9
-https://github.com/nmakhotkin/vk.git@2.0b1#egg=vk
+git+https://github.com/nmakhotkin/vk.git@2.0b1#egg=vk
 
 # Tests
 unittest2
