@@ -9,6 +9,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import time
 import requests
 import vk
 
@@ -285,7 +286,14 @@ class VkBot(object):
                 timeout
             )
 
-        return requests.get(url).json()
+        resp = requests.get(url)
+
+        try:
+            resp = resp.json()
+        except (TypeError, ValueError):
+            resp = {'error': resp.content}
+
+        return resp
 
     def _handle_longpoll_fail(self, resp):
         error = resp.get('failed')
@@ -310,6 +318,14 @@ class VkBot(object):
                 LOG.warn("LongPoll connection failed: %s" % resp)
 
                 self._handle_longpoll_fail(resp)
+                continue
+
+            if 'error' in resp:
+                LOG.warning(
+                    "Error while waiting for event: %s" % resp['error']
+                )
+                # Pause requesting on 1 sec.
+                time.sleep(1)
                 continue
 
             updates = resp['updates']
