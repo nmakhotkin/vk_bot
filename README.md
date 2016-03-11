@@ -24,3 +24,4 @@ For testing purpose, there is simple test script which sends
 only test info to main chat (please configure properly *chat_id* field).
 
     python vk_bot/test.py
+
