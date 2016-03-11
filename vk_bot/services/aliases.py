@@ -42,8 +42,11 @@ def create_alias(name, command, user):
     return alias
 
 
-def get_aliases(user):
-    return db_api.get_aliases(user_id=user)
+def get_aliases(user=None):
+    if user:
+        return db_api.get_aliases(user_id=user)
+    else:
+        return db_api.get_aliases()
 
 
 def delete_alias(user, id):

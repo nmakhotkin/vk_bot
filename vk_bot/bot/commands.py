@@ -61,13 +61,13 @@ def is_command(string):
 
 
 def get_cmd_if_alias(message):
-    aliases = alias_service.get_aliases(message['user_id'])
+    aliases = alias_service.get_aliases()
 
     if not aliases:
         return None
 
     for alias in aliases:
-        if message['body'] == alias.name:
+        if message['body'].lower() == alias.name.lower():
             return alias.command
 
 
