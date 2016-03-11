@@ -24,3 +24,5 @@ process_commands = * * * * * *
 [commands]
 reminders_per_user = 2
 reminders_count = 10
+
+aliases_per_user = 3

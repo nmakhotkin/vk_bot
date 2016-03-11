@@ -37,3 +37,16 @@ class PeriodicCall(base.ModelBase):
     )
     remaining_executions = sa.Column(sa.Integer)
     processing = sa.Column(sa.Boolean, default=False)
+
+
+class Alias(base.ModelBase):
+    __tablename__ = 'aliases'
+
+    id = sa.Column(
+        st.Integer,
+        sa.Sequence('alias_id_seq'),
+        primary_key=True
+    )
+    name = sa.Column(st.String(80), unique=True)
+    user_id = sa.Column(st.String(20), nullable=False)
+    command = sa.Column(st.String(256), nullable=False)

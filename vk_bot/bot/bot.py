@@ -9,8 +9,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import time
 import requests
+import time
 import vk
 
 from vk_bot import config

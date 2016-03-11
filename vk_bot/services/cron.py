@@ -183,10 +183,14 @@ def process_commands():
     messages = vk_bot.wait_for_messages()
 
     for msg in messages:
-        if commands.is_command(msg['body']):
+        cmd = commands.get_cmd_if_alias(msg)
+
+        if cmd or commands.is_command(msg['body']):
+            cmd = msg['body'] if not cmd else cmd
+
             try:
                 LOG.info("Executing command '%s'..." % msg['body'])
-                commands.execute_cmd(msg, msg['body'])
+                commands.execute_cmd(msg, cmd)
             except Exception as e:
                 e_msg = "'%s' cmd failed: %s" % (msg['body'], e)
                 LOG.warn(e_msg)

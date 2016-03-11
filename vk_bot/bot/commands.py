@@ -19,27 +19,56 @@ import shlex
 from vk_bot.bot import actions
 from vk_bot.bot import bot
 from vk_bot import config
+from vk_bot.services import aliases as alias_service
 from vk_bot.services import reminders
 
 
-DIRECT_COMMAND_TRIGGERS = [u"нет!", u"котик", u"анекдот", u"напоминалки"]
-CONTAIN_COMMAND_TRIGGERS = [u"напомни ", u"забудь ", u"погода"]
+DIRECT_COMMAND_TRIGGERS = [
+    u"нет!",
+    u"котик",
+    u"анекдот",
+    u"напоминалки",
+    u"алиас",
+    u"алиасы",
+]
+CONTAIN_COMMAND_TRIGGERS = [
+    u"напомни ",
+    u"забудь ",
+    u"погода",
+    u"забудь-алиас "
+]
 CONF = config.CONF
 
 
 def is_command(string):
     string = string.lower()
 
-    is_cmd = string.startswith('bot ') or string in DIRECT_COMMAND_TRIGGERS
-
-    if is_cmd:
-        return is_cmd
+    if string in DIRECT_COMMAND_TRIGGERS:
+        return True
 
     for cmd in CONTAIN_COMMAND_TRIGGERS:
         if string.startswith(cmd):
             return True
 
+    try:
+        parse_command(string)
+    except Exception:
+        pass
+    else:
+        return True
+
     return False
+
+
+def get_cmd_if_alias(message):
+    aliases = alias_service.get_aliases(message['user_id'])
+
+    if not aliases:
+        return None
+
+    for alias in aliases:
+        if message['body'] == alias.name:
+            return alias.command
 
 
 class ArgumentParserError(Exception):
@@ -67,8 +96,8 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
             bot.get_bot().answer_on_message(self.vk_message, message)
 
 
-def execute_cmd(message, command):
-    splitter = shlex.shlex(command, posix=True)
+def parse_command(string, message=None):
+    splitter = shlex.shlex(string, posix=True)
     splitter.whitespace_split = True
 
     arg_list = list(splitter)
@@ -80,12 +109,16 @@ def execute_cmd(message, command):
 
     parser = get_parser(message)
 
-    args = parser.parse_args(arg_list)
+    return parser.parse_args(arg_list)
+
+
+def execute_cmd(message, command):
+    args = parse_command(message=message, string=command)
 
     return args.func(message, args)
 
 
-def get_parser(message):
+def get_parser(message=None):
     global_parser = ThrowingArgumentParser(
         'bot',
         vk_message=message,
@@ -205,6 +238,39 @@ def get_parser(message):
         default='saratov'
     )
     parser.set_defaults(func=send_weather)
+
+    parser = subparser.add_parser(
+        'алиас',
+        help="Создаёт алиас для команды."
+    )
+    parser.add_argument(
+        'name',
+        type=str,
+        help='Имя алиаса (то, что будет использоваться в качестве команды).',
+    )
+    parser.add_argument(
+        'command',
+        type=str,
+        help='Команда для алиаса.',
+    )
+    parser.set_defaults(func=create_alias)
+
+    parser = subparser.add_parser(
+        'забудь-алиас',
+        help="Удаляет алиас."
+    )
+    parser.add_argument(
+        'id',
+        type=str,
+        help='id алиаса.',
+    )
+    parser.set_defaults(func=remove_alias)
+
+    parser = subparser.add_parser(
+        'алиасы',
+        help="Показывает алиасы."
+    )
+    parser.set_defaults(func=get_aliases)
 
     return global_parser
 
@@ -338,3 +404,55 @@ def remove_reminder(message, args):
 
     vk_bot = bot.get_bot()
     vk_bot.answer_on_message(message, "Напоминалка удалена.")
+
+
+def create_alias(message, args):
+    name = args.name
+    command = args.command
+    user = message['user_id']
+
+    if not is_command(command):
+        raise RuntimeError("Некорректная команда для алиаса: %s" % command)
+
+    if is_command(name):
+        raise RuntimeError(
+            "Имя алиаса пересекается с существующей командой: %s" % name
+        )
+
+    vk_bot = bot.get_bot()
+
+    alias = alias_service.create_alias(name, command, user)
+
+    vk_bot.answer_on_message(message, 'Алиас создан. id = %s.' % alias.id)
+
+
+def get_aliases(message, args):
+    user_aliases = alias_service.get_aliases(message['user_id'])
+
+    vk_bot = bot.get_bot()
+
+    if not user_aliases:
+        vk_bot.answer_on_message(message, "Ещё нет алиасов.")
+        return
+
+    output = []
+    for i, a in enumerate(user_aliases):
+        output.append(
+            "%s. %s, команда = '%s'" % (
+                i + 1,
+                a.name,
+                a.command
+            )
+        )
+
+    vk_bot.answer_on_message(message, '\n'.join(output))
+
+
+def remove_alias(message, args):
+    user = message['user_id']
+    id = args.id
+
+    alias_service.delete_alias(user, id)
+
+    vk_bot = bot.get_bot()
+    vk_bot.answer_on_message(message, "Алиас удален.")
