@@ -201,6 +201,11 @@ def get_parser(message=None):
         metavar='<1234567>'
     )
     parser.add_argument(
+        '-silent',
+        action='store_true',
+        help='При активном флаге ответ на создание напоминалки не показывается',
+    )
+    parser.add_argument(
         'text',
         type=str,
         help='Текст напоминания',
@@ -390,10 +395,11 @@ def add_reminder(message, args):
         args.text
     )
 
-    vk_bot.answer_on_message(
-        message,
-        "Напоминалка создана; id = %s." % reminder.name
-    )
+    if not args.silent:
+        vk_bot.answer_on_message(
+            message,
+            "Напоминалка создана; id = %s." % reminder.name
+        )
 
 
 def remove_reminder(message, args):
@@ -427,19 +433,19 @@ def create_alias(message, args):
 
 
 def get_aliases(message, args):
-    user_aliases = alias_service.get_aliases(message['user_id'])
+    aliases = alias_service.get_aliases()
 
     vk_bot = bot.get_bot()
 
-    if not user_aliases:
+    if not aliases:
         vk_bot.answer_on_message(message, "Ещё нет алиасов.")
         return
 
     output = []
-    for i, a in enumerate(user_aliases):
+    for i, a in enumerate(aliases):
         output.append(
             "%s. %s, команда = '%s'" % (
-                i + 1,
+                a.id,
                 a.name,
                 a.command
             )

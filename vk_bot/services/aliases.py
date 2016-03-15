@@ -60,4 +60,4 @@ def delete_alias(user, id):
     if alias_to_delete.id in [r.id for r in user_aliases]:
         db_api.delete_alias(id)
     else:
-        raise RuntimeError("Неправильный id.")
+        raise RuntimeError("Неправильный id. Либо не Ваш алиас.")
