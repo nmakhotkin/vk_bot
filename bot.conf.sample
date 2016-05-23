@@ -5,6 +5,8 @@ password = secret
 
 app_id = 3756128
 
+# Admin user_id for admin commands
+admin_user_id = 1
 
 [chat]
 # Main chat for sending messages to.
