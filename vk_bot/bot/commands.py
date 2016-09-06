@@ -17,6 +17,7 @@ import sys
 import shlex
 
 from vk_bot.bot import actions
+from vk_bot.bot import admin
 from vk_bot.bot import bot
 from vk_bot import config
 from vk_bot.services import aliases as alias_service
@@ -127,6 +128,8 @@ def get_parser(message=None):
 
     subparser = global_parser.add_subparsers(dest='action')
 
+    admin.add_admin_namespace(subparser)
+
     parser = subparser.add_parser('hello', help="Says hello to the user.")
     parser.add_argument(
         '-private',
@@ -203,7 +206,10 @@ def get_parser(message=None):
     parser.add_argument(
         '-silent',
         action='store_true',
-        help='При активном флаге ответ на создание напоминалки не показывается',
+        help=(
+            'При активном флаге ответ на '
+            'создание напоминалки не показывается'
+        ),
     )
     parser.add_argument(
         'text',
