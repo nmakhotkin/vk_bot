@@ -24,7 +24,7 @@ def _validate_alias(name, command, user):
     if len(existing_aliases) >= aliases_limit:
         raise RuntimeError(
             "Нельзя создать больше %s алиасов, у Вас уже есть %s. "
-            "Удалить можно с помощью команды 'стереть алиас <id>'. Посмотреть "
+            "Удалить можно с помощью команды 'забудь-алиас <id>'. Посмотреть "
             "алиасы можно командой 'алиасы'."
             % (aliases_limit, len(existing_aliases))
         )

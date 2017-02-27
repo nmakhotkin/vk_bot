@@ -10,6 +10,7 @@
 #    limitations under the License.
 
 import random
+import re
 
 from bs4 import BeautifulSoup
 import requests
@@ -38,6 +39,7 @@ NO_URLS = [
 ]
 CAT_URL = "http://thecatapi.com/api/images/get?format=src&type=gif&size=med"
 ANEKDOT_URL = "http://www.anekdot.ru/random/anekdot"
+COLOR_PATTERN = re.compile(r"\[0m|\[38;5;[0-9]+;?[0-9]?m|\[1m|\x1b")
 
 
 def answer_on_message(message, text):
@@ -91,8 +93,9 @@ def send_euro_info(message=None):
 
 
 def send_weather(message, city):
-    r = requests.get('http://wttr.in/%s' % city)
-    parser = BeautifulSoup(r.content, "html5lib")
+    headers = {"Accept-Language": "ru"}
+    r = requests.get('http://wttr.in/%s' % city, headers=headers)
+    parser = BeautifulSoup(r.content, "html5lib", from_encoding="utf8")
     text = parser.find('body').text
 
     if text.find('┌') == -1:
@@ -104,21 +107,26 @@ def send_weather(message, city):
 
     # Remove first 15 characters starting 3rd line.
     replacement = []
+    __import__("pdb").set_trace()
     for item in forecast_array[3:]:
+        item = disable_color(item)
         replacement += [item[15:]]
 
-    replacement[0] = "Forecast:\t%s" % replacement[0]
-    replacement[1] = "Temperature:\t%s" % replacement[1]
-    replacement[2] = "Wind:\t\t%s" % replacement[2]
-    replacement[3] = "Visibility:\t%s" % replacement[3]
-    replacement[4] = "Precipitation:\t%s" % replacement[4]
+    replacement[0] = "Температура:\t%s" % replacement[0]
+    replacement[1] = "Ветер:\t\t%s" % replacement[1]
+    replacement[2] = "Видимость:\t%s" % replacement[2]
+    replacement[3] = "Осадки:\t%s" % replacement[3]
 
     forecast_array[3:] = replacement
 
-    forecast_array += ["Forecast is taken from wttr.in"]
+    forecast_array += ["Источник - wttr.in"]
 
     vk_bot = bot.get_bot()
     vk_bot.answer_on_message(message, '\n'.join(forecast_array))
+
+
+def disable_color(s):
+    return re.sub(COLOR_PATTERN, "", s)
 
 
 def send_no(message):

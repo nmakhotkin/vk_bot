@@ -38,11 +38,18 @@ CONTAIN_COMMAND_TRIGGERS = [
     u"погода",
     u"забудь-алиас "
 ]
+IGNORE_TRIGGERS = [
+    "погода в городе:"
+]
 CONF = config.CONF
 
 
 def is_command(string):
     string = string.lower()
+
+    for ignore in IGNORE_TRIGGERS:
+        if string.startswith(ignore):
+            return False
 
     if string in DIRECT_COMMAND_TRIGGERS:
         return True
@@ -148,13 +155,13 @@ def get_parser(message=None):
     parser.set_defaults(func=show_help)
 
     parser = subparser.add_parser(
-        'get-dollar-info',
+        'dollar',
         help="Shows current dollar information (picture and text)"
     )
     parser.set_defaults(func=send_dollar_info)
 
     parser = subparser.add_parser(
-        'get-euro-info',
+        'euro',
         help="\tShows current euro information (picture and text)"
     )
     parser.set_defaults(func=send_euro_info)
