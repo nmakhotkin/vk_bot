@@ -107,7 +107,6 @@ def send_weather(message, city):
 
     # Remove first 15 characters starting 3rd line.
     replacement = []
-    __import__("pdb").set_trace()
     for item in forecast_array[2:]:
         item = disable_color(item)
         replacement += [item[15:]]
