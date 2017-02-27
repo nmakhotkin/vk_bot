@@ -97,8 +97,8 @@ def end_processing(gt, pcall):
         pcall.pattern, pcall.execution_time
     )
 
-    if (pcall.remaining_executions is not None
-            and pcall.remaining_executions == 0):
+    if (pcall.remaining_executions is not None and
+            pcall.remaining_executions == 0):
         api.delete_periodic_call(pcall.name)
 
         utils.SEMAPHORES[pcall.id].release()

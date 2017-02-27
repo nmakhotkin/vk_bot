@@ -12,8 +12,8 @@
 from vk_bot import config
 config.parse()
 
-from vk_bot.bot import bot
-from vk_bot.utils import log as logging
+from vk_bot.bot import bot  # noqa
+from vk_bot.utils import log as logging  # noqa
 
 
 LOG = logging.getLogger(__name__)

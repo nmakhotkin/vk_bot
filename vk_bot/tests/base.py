@@ -14,7 +14,7 @@ import unittest2
 from vk_bot import config
 config.parse()
 
-from vk_bot.bot import bot
+from vk_bot.bot import bot  # noqa
 
 
 class BaseTest(unittest2.TestCase):
