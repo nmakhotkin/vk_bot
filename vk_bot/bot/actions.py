@@ -107,16 +107,17 @@ def send_weather(message, city):
 
     # Remove first 15 characters starting 3rd line.
     replacement = []
-    for item in forecast_array[3:]:
+    __import__("pdb").set_trace()
+    for item in forecast_array[2:]:
         item = disable_color(item)
         replacement += [item[15:]]
 
-    replacement[0] = "Температура:\t%s" % replacement[0]
-    replacement[1] = "Ветер:\t\t%s" % replacement[1]
-    replacement[2] = "Видимость:\t%s" % replacement[2]
-    replacement[3] = "Осадки:\t%s" % replacement[3]
+    replacement[1] = "Температура:\t%s" % replacement[1]
+    replacement[2] = "Ветер:\t\t%s" % replacement[2]
+    replacement[3] = "Видимость:\t%s" % replacement[3]
+    replacement[4] = "Осадки:\t%s" % replacement[4]
 
-    forecast_array[3:] = replacement
+    forecast_array[2:] = replacement
 
     forecast_array += ["Источник - wttr.in"]
 
