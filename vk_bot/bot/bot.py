@@ -43,11 +43,12 @@ class VkBot(object):
     def __init__(self, email, password, app_id, scope):
         self.app_id = app_id
 
-        self._api = vk.OAuthAPI(
+        self._api = vk.API(
             app_id=app_id,
             user_login=email,
             user_password=password,
-            scope=scope
+            scope=scope,
+            v=5,
         )
         self.ts = None
         self._main_chat = None
@@ -55,8 +56,8 @@ class VkBot(object):
 
     @property
     def api(self):
-        if not self._api.access_token:
-            self._api.get_access_token()
+        if not self._api.session.access_token:
+            self._api.session.get_access_token()
         return self._api
 
     @property
@@ -254,7 +255,7 @@ class VkBot(object):
 
     @utils.with_retry()
     def _get_messages_longpoll_server(self, timeout=20):
-        server_info = self.api.messages.getLongPollServer()
+        server_info = self.api.messages.getLongPollServer(use_ssl=1)
 
         server_info['wait'] = timeout
 
@@ -271,10 +272,10 @@ class VkBot(object):
             'wait': wait
         }
 
-        return ("http://%(server)s?act=a_check&"
-                "key=%(key)s&ts=%(ts)s&wait=%(wait)s&mode=2" % info)
+        return ("https://%(server)s?act=a_check&"
+                "key=%(key)s&ts=%(ts)s&wait=%(wait)s&mode=2&version=1" % info)
 
-    @utils.with_retry()
+    @utils.with_retry(delay=2, count=5)
     def _wait_for_event(self, timeout=20, ts=None):
         if not self.msg_longpoll_server_info:
             url = self._get_messages_longpoll_server(timeout)
@@ -298,7 +299,7 @@ class VkBot(object):
     def _handle_longpoll_fail(self, resp):
         error = resp.get('failed')
 
-        if error in [2, 3]:
+        if error in [1, 2, 3]:
             self._get_messages_longpoll_server()
 
     def wait_for_messages(self):
