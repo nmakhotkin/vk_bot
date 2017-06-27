@@ -48,7 +48,7 @@ class VkBot(object):
             user_login=email,
             user_password=password,
             scope=scope,
-            v=5,
+            v=5.65,
         )
         self.ts = None
         self._main_chat = None

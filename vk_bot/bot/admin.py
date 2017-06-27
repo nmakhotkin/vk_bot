@@ -47,10 +47,28 @@ def add_admin_namespace(subparser):
     admin_subparsers = admin.add_subparsers(dest='action')
 
     get_chat_parser = admin_subparsers.add_parser(
-        'get-main-chat',
+        'main-chat',
         help="Получить информацию о главном чате."
     )
     get_chat_parser.set_defaults(func=get_main_chat)
+
+    list_chats_parser = admin_subparsers.add_parser(
+        'chat-list',
+        help="Получить список доступных чатов."
+    )
+    list_chats_parser.set_defaults(func=list_chats)
+
+    set_chat_parser = admin_subparsers.add_parser(
+        'chat-set',
+        help="Установить чат с <id> в качестве главного."
+    )
+    set_chat_parser.add_argument(
+        'id',
+        type=str,
+        help='id чата.',
+        metavar='<id>'
+    )
+    set_chat_parser.set_defaults(func=set_chat)
 
     global SUB_PARSER
     if not SUB_PARSER:
@@ -85,7 +103,7 @@ def get_main_chat(message, args):
         peer_id=2000000000 + int(chat_id),
         count=1,
         user_id=message['user_id'],
-        v=5.38
+        v=5.65
     )['items'][0]
 
     last_update = datetime.datetime.fromtimestamp(int(last_message['date']))
@@ -95,4 +113,48 @@ def get_main_chat(message, args):
         "Main chat: %s. %s, Посл.обновление: %s" % (
             chat_id, chat_name, last_update
         )
+    )
+
+
+@admin_cmd
+def list_chats(message, args):
+    vk_bot = bot.get_bot()
+
+    dialogs = vk_bot.api.messages.searchDialogs(
+        limit=100,
+        v=5.65
+    )
+
+    dialogs = [d for d in dialogs if d['type'] == 'chat']
+
+    output = []
+    for i, d in enumerate(dialogs):
+        s = (
+            "%s. id: %s, title: %s, admin_id: %s"
+            % (i+1, d['id'], d['title'], d['admin_id'])
+        )
+        output += [s]
+    vk_bot.answer_on_message(
+        message,
+        "\n".join(output)
+    )
+
+
+@admin_cmd
+def set_chat(message, args):
+    chat_id = args.id
+    vk_bot = bot.get_bot()
+
+    chat = vk_bot.api.messages.getChat(
+        chat_id=chat_id,
+        v=5.65
+    )
+
+    vk_bot._main_chat = chat
+    config.CONF.set('chat', 'main', str(chat['id']))
+    config.write()
+
+    vk_bot.answer_on_message(
+        message,
+        "Chat with id %s is set." % chat['id']
     )
