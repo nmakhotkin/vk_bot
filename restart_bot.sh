@@ -28,8 +28,8 @@ cat vk_bot.log >> vk_bot.bak
 screen_name=vk
 log "Starting a new bot process..."
 
-scr=$(screen -ls | grep vk)
-if [ -z $scr ]
+scr=$(screen -ls | grep $screen_name)
+if [ -z "$scr" ];
 then
   log "Creating a new '$screen_name' screen..."
   screen -dmS $screen_name
