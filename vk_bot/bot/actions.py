@@ -92,16 +92,25 @@ def send_euro_info(message=None):
         )
 
 
-def send_weather(message, city):
+def send_weather(message, city, picture=False, for_day=False):
+    vk_bot = bot.get_bot()
+
+    if picture:
+        url = 'http://wttr.in/%s.png?%s&lang=ru' % (city, 1 if for_day else 0)
+        vk_bot.answer_on_message(message, '', photo_url=url)
+        return
+
     headers = {"Accept-Language": "ru"}
-    r = requests.get('http://wttr.in/%s' % city, headers=headers)
+    r = requests.get('http://wttr.in/%s?1&T' % city, headers=headers)
     parser = BeautifulSoup(r.content, "html5lib", from_encoding="utf8")
     text = parser.find('body').text
 
-    if text.find('┌') == -1:
-        raise RuntimeError(text)
-
     forecast = text[:text.find('┌')]
+
+    start = text.find('┌', text.find('┌')+1)
+    end = text.find("┘", text.find("┘") + 1)
+
+    array_for_day = _extract_weather_for_day(text[start:end].split('\n'))
 
     forecast_array = forecast.split('\n')
 
@@ -118,10 +127,46 @@ def send_weather(message, city):
 
     forecast_array[2:] = replacement
 
+    if for_day:
+        forecast_array += array_for_day
     forecast_array += ["Источник - wttr.in"]
 
-    vk_bot = bot.get_bot()
     vk_bot.answer_on_message(message, '\n'.join(forecast_array))
+
+
+def _extract_weather_for_day(weather_array):
+    forecast = weather_array[3]
+    temperature = weather_array[4]
+    precipitation = weather_array[7]
+
+    out = []
+    fc_array = forecast.split('│')[1:-1]
+    tp_array = temperature.split('│')[1:-1]
+    pp_array = precipitation.split('│')[1:-1]
+
+    daytime = {
+        0: 'Утро',
+        1: 'День',
+        2: 'Вечер',
+        3: 'Ночь',
+    }
+
+    for idx, fc in enumerate(fc_array):
+        fore = fc[15:].strip()
+        temp = tp_array[idx][15:].strip()
+        precip = pp_array[idx][15:]
+
+        out.append(
+            '%s: %s, %s, %s'
+            % (
+                daytime[idx],
+                fore,
+                'Температура: %s' % temp,
+                'Осадки: %s' % precip
+            )
+        )
+
+    return out
 
 
 def disable_color(s):

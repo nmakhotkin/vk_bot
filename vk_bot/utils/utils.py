@@ -178,9 +178,7 @@ def get_euro_info():
     }
 
 
-def upload_file_on_server(server_url, file_url, entity_type='photo'):
-    file_path = download_file(file_url)
-
+def upload_file_by_path(server_url, file_path, entity_type='photo'):
     data = {}
     files = {entity_type: (file_path, open(file_path, 'rb'))}
     url = server_url.split('?')[0]
@@ -200,6 +198,12 @@ def upload_file_on_server(server_url, file_url, entity_type='photo'):
         )
 
     return resp.json()
+
+
+def upload_file_on_server(server_url, file_url, entity_type='photo'):
+    file_path = download_file(file_url)
+
+    return upload_file_by_path(server_url, file_path, entity_type)
 
 
 def import_class(import_str):

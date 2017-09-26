@@ -255,6 +255,24 @@ def get_parser(message=None):
         help='Город для прогноза',
         default='saratov'
     )
+    parser.add_argument(
+        '-картинкой',
+        dest='picture',
+        action='store_true',
+        help=(
+            'При активном флаге ответ '
+            'приходит картинкой'
+        ),
+    )
+    parser.add_argument(
+        '-день',
+        dest='for_day',
+        action='store_true',
+        help=(
+            'При активном флаге вернёт '
+            'погоду на весь день'
+        ),
+    )
     parser.set_defaults(func=send_weather)
 
     parser = subparser.add_parser(
@@ -340,7 +358,7 @@ def send_no(message, args):
 
 
 def send_weather(message, args):
-    actions.send_weather(message, args.city)
+    actions.send_weather(message, args.city, args.picture, args.for_day)
 
 
 def rulez(message, args):
