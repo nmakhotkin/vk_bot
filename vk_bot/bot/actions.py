@@ -165,6 +165,8 @@ def _extract_weather_for_day(weather_array):
                 'Осадки: %s' % precip
             )
         )
+        if idx < len(fc_array):
+            out.append('\n')
 
     return out
 
