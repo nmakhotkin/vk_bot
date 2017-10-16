@@ -107,7 +107,7 @@ def send_weather(message, city, picture=False, for_day=False):
         vk_bot.answer_on_message(
             message,
             'Ошибка при запросе погоды: статус %s\n'
-            'Сообщение: %s' % (r.status_code, r.content)
+            'Сообщение: %s' % (r.status_code, r.content.decode())
         )
         return
 
@@ -123,7 +123,7 @@ def send_weather(message, city, picture=False, for_day=False):
         vk_bot.answer_on_message(
             message,
             'Ошибка при запросе погоды: статус %s\n'
-            'Сообщение: %s' % (r.status_code, r.content)
+            'Сообщение: %s' % (r.status_code, r.content.decode())
         )
         return
 
