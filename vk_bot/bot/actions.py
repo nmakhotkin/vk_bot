@@ -102,6 +102,15 @@ def send_weather(message, city, picture=False, for_day=False):
 
     headers = {"Accept-Language": "ru"}
     r = requests.get('http://wttr.in/%s?1&T' % city, headers=headers)
+
+    if r.status_code >= 400:
+        vk_bot.answer_on_message(
+            message,
+            'Ошибка при запросе погоды: статус %s\n'
+            'Сообщение: %s' % (r.status_code, r.content)
+        )
+        return
+
     parser = BeautifulSoup(r.content, "html5lib", from_encoding="utf8")
     text = parser.find('body').text
 
@@ -109,6 +118,14 @@ def send_weather(message, city, picture=False, for_day=False):
 
     start = text.find('┌', text.find('┌')+1)
     end = text.find("┘", text.find("┘") + 1)
+
+    if start == -1 or end == -1:
+        vk_bot.answer_on_message(
+            message,
+            'Ошибка при запросе погоды: статус %s\n'
+            'Сообщение: %s' % (r.status_code, r.content)
+        )
+        return
 
     array_for_day = _extract_weather_for_day(text[start:end].split('\n'))
 
