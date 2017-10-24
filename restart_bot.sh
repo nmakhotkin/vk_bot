@@ -2,7 +2,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BOT_DIR=/opt/stack/vk_bot
 
 cd $BOT_DIR
-LOG_FILE=/op/stack/vk_bot/restart.log
+LOG_FILE=/opt/stack/vk_bot/restart.log
 
 function log() {
    msg="$(date +'%Y-%m-%dT%T')   $1"
