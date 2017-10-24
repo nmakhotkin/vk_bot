@@ -2,9 +2,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BOT_DIR=/opt/stack/vk_bot
 
 cd $BOT_DIR
+LOG_FILE=/op/stack/vk_bot/restart.log
 
 function log() {
-    echo $1 | ts >> log.log
+   msg="$(date +'%Y-%m-%dT%T')   $1"
+   echo "$msg" >> $LOG_FILE
+   echo "$msg"
 }
 
 # Stop the bot process.
