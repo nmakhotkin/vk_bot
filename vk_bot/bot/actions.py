@@ -96,12 +96,12 @@ def send_weather(message, city, picture=False, for_day=False):
     vk_bot = bot.get_bot()
 
     if picture:
-        url = 'http://wttr.in/%s.png?%s&lang=ru' % (city, 1 if for_day else 0)
+        url = 'http://wttr.in/%s.png?%s&lang=ru&m' % (city, 1 if for_day else 0)
         vk_bot.answer_on_message(message, '', photo_url=url)
         return
 
     headers = {"Accept-Language": "ru"}
-    r = requests.get('http://wttr.in/%s?1&T' % city, headers=headers)
+    r = requests.get('http://wttr.in/%s?1&T&m' % city, headers=headers)
 
     if r.status_code >= 400:
         vk_bot.answer_on_message(
